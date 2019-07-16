@@ -21,7 +21,7 @@
 	},
 	"apis": {
 		"weather-provider-api1.0.0": {
-			"$ref": "weather-provider-api_1.0.0.yaml"
+			"name": "weather-provider-api:1.0.0"
 		}
 	},
 	"visibility": {
