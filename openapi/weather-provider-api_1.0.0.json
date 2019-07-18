@@ -35,7 +35,7 @@
 			"flow": "accessCode",
 			"x-ibm-oauth-provider": "oauth2-server",
 			"authorizationUrl": "https://$(catalog.url)/oauth2/authorize",
-			"tokenUrl": "https://$(catalog.url)/oauth2/token",
+			"tokenUrl": "https://$(catalog.url)//oauth2/token",
 			"scopes": {
 				"weather": "Sample scope description 1",
 				"openid": "OIDC scope"
