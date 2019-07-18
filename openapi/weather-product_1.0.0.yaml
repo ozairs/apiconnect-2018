@@ -13,8 +13,10 @@ plans:
     description: Default Plan
     approval: false
 apis:
+  utility1.0.0:
+    name: 'utility:1.0.0'
   weather-provider-api1.0.0:
-    $ref: weather-provider-api_1.0.0.yaml
+    name: 'weather-provider-api:1.0.0'
 visibility:
   view:
     type: public
