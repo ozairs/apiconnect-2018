@@ -248,6 +248,7 @@
         }
     },
     "scopes": {
-        "weather": "Weather Scope"
+        "weather": "Weather Scope",
+        "openid": "OpenID Scope"
     }
 }
