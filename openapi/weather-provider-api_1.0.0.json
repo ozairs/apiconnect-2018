@@ -34,7 +34,7 @@
 			"type": "oauth2",
 			"flow": "accessCode",
 			"x-ibm-oauth-provider": "oauth2-server",
-			"authorizationUrl": "https://$(catalog.url)/oauth2/authorize",
+			"authorizationUrl": "https://$(catalog.url)//oauth2/authorize",
 			"tokenUrl": "https://$(catalog.url)//oauth2/token",
 			"scopes": {
 				"weather": "Sample scope description 1",
