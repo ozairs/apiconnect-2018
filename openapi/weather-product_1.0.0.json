@@ -22,7 +22,10 @@
 	"apis": {
 		"weather-provider-api1.0.0": {
 			"name": "weather-provider-api:1.0.0"
-		}
+		},
+		"utility1.0.0": {
+                        "name": "utility:1.0.0"
+                }
 	},
 	"visibility": {
 		"view": {
