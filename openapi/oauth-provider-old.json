@@ -15,46 +15,15 @@
             "confidential"
         ],
         "authorize_path": "/oauth2/authorize",
-        "token_path": "/oauth2/token",        
+        "token_path": "/oauth2/token",
         "api": {
             "info": {
-                "description": "",
-                "version": "1.0.0",
-                "title": "oauth2-server"
+                "description": ""
             },
             "x-ibm-configuration": {
                 "gateway": "datapower-api-gateway",
                 "assembly": {
                     "execute": [
-                        {
-                            "set-variable": {
-                                "title": "x-ibm-oauth-oidc-auto-generated-set-variable",
-                                "description": "Set the necessary JWS context info",
-                                "actions": [
-                                    {
-                                        "set": "oauth.oidc.issuer.url",
-                                        "value": "$(JWTIssuer)",
-                                        "type": "any"
-                                    },
-                                    {
-                                        "set": "oauth.oidc.jwt.sign.jwk",
-                                        "value": "$(JWSSignPrivateKey)",
-                                        "type": "any"
-                                    },
-                                    {
-                                        "set": "oauth.oidc.jwt.sign.algorithm",
-                                        "value": "$(JWSAlgorithm)",
-                                        "type": "any"
-                                    },
-                                    {
-                                        "set": "oauth.oidc.jwk.kid",
-                                        "value": "$(JWSSignKeyKID)",
-                                        "type": "any"
-                                    }
-                                ],
-                                "version": "2.0.0"
-                            }
-                        },
                         {
                             "oauth": {
                                 "title": "oauth-auto-generated-1",
@@ -220,44 +189,6 @@
                                     }
                                 ]
                             }
-                        },
-                        {
-                            "switch": {
-                                "version": "2.0.0",
-                                "title": "x-ibm-oauth-oidc-auto-generated-switch",
-                                "case": [
-                                    {
-                                        "condition": "($exists(oauth.oidc.enabled))",
-                                        "execute": [
-                                            {
-                                                "jwt-generate": {
-                                                    "version": "2.0.0",
-                                                    "title": "x-ibm-oauth-oidc-auto-generated-jwt-generate",
-                                                    "jwt": "oauth.oidc.idtoken",
-                                                    "iss-claim": "oauth.oidc.issuer.url",
-                                                    "exp-claim": 3600,
-                                                    "description": "Generate the OIDC JWT",
-                                                    "sub-claim": "oauth.oidc.sub",
-                                                    "aud-claim": "oauth.oidc.aud",
-                                                    "private-claims": "oauth.oidc.claims",
-                                                    "jti-claim": true,
-                                                    "jws-crypto": "",
-                                                    "jws-alg": "HS256",
-                                                    "jws-jwk": "oauth.oidc.jwt.sign.jwk"
-                                                }
-                                            },
-                                            {
-                                                "gatewayscript": {
-                                                    "title": "x-ibm-oauth-oidc-auto-generated-gatewayscript",
-                                                    "description": "Inject OIDC into response",
-                                                    "version": "2.0.0",
-                                                    "source": "function getIDToken() {\n  var idtoken = context.get('oauth.oidc.idtoken');\n  if (idtoken !== undefined)\n  {\n    if (idtoken.startsWith('Bearer '))\n    {\n      idtoken = idtoken.substring(7);\n    }\n  }\n  return idtoken;\n}\n\nfunction injectTokenInHeader(token) {\n  if (token === undefined) return;\n  \n  var location = context.message.header.get('location');\n  if (location === undefined) {\n    location = \"id_token=\" + token;\n  }\n  else if (location.endsWith('?') || location.endsWith('#'))\n  {\n    location = location + \"id_token=\" + token;\n  }\n  else\n  {\n    location = location + \"&id_token=\" + token;\n  }\n  context.message.header.set('location', location);\n}\n\nfunction injectTokenInBody(token) {\n  if (token === undefined)\n    return;\n\n  context.message.body.readAsJSON(function (error, jsonBody)\n  {\n    if (error)\n    {\n      return;\n    }\n    \n    if (jsonBody === undefined)\n    {\n      jsonBody = {\"id_token\": token};\n    }\n    else\n    {\n      jsonBody.id_token = token;\n    }\n    context.message.body.write(jsonBody);\n  });\n}\n\nfunction displayError(error) {\n  if (error !== null)\n    console.error(error);\n}\n\nvar oidc_enabled = context.get('oauth.oidc.enabled');\nif ((oidc_enabled === undefined) || !oidc_enabled) {\n  console.debug('OIDC disabled');\n  return;\n}\n\nvar token = getIDToken();\nif (token === undefined) {\n  displayError('No ID Token available');\n  return;\n}\n\nvar requestType = context.get('oauth.oidc.request_type');\nvar error = null;\nif (requestType === undefined) {\n  error = 'Undefined request type';\n} else if (requestType === 'implicit') {\n  injectTokenInHeader(token);\n} else if (requestType === 'azcode_get') {\n  injectTokenInHeader(token);\n} else if (requestType === 'azcode_grant') {\n  injectTokenInBody(token);\n} else {\n  error = 'Invalid request type ' + requestType;\n  displayError(error);\n  return;\n}"
-                                                }
-                                            }
-                                        ]
-                                    }
-                                ]
-                            }
                         }
                     ]
                 },
@@ -266,198 +197,10 @@
                         "value": "{   \"kty\": \"RSA\",   \"d\":         \"IWwDpREZSZ3sF9GrEX1SXb8sLpSFjUL2XtJXmbQNGssBTx_WsoWXVdP8agewUjy0dXjOi4kazbb5foQ4Kn8RPx64pkozpdopx6kwsS9yIh_w0bB-1eJzIxiV1f18XX5g_Sqv_PJ63oNgS0QQCh3mECqp_wlzKbiDH5wSHDAuNLFXCTpCpxTe_Iyd2z1kJNDDSExs5Hj8oFCUSxXmYD9RM7UPgdae-bOayv4s5HCCif3ZrVzm-TjvNbLhcP75bRRzREPk2QjN2e1yPHs2uJBHmSQdiQ58G43fHs8Kqi5HDrF8e77vFB03MCUq37e3WcnrKRR8JxlrKGgf3PhDJp0OUQ\",           \"e\": \"AQAB\",   \"use\": \"sig\",   \"kid\": \"ozairs\",   \"alg\": \"RS256\",   \"n\":         \"hDyppyzLbrV4dDBDze5g-4LH5M9JiFKmFAp8Mt-GkOjhbn3VYU937GRugUTXyM9TrV15LJFA1PA5NRGZO-R8Wv_vQx6hmbbsD2ChouZlSWnSJ3ZFdijRSY_-vddbufAG2ucK0CCD0TyBD5WYe9tnpMOCxv4eGAsUN6BT9OhcEJEWv3cvyHK6DUATjpx4ExaQi1wgAVbfCBK-A5au4ApOLRQjZ-tLCt3rTbqtkRUuES4nf1bS70YU8rsPBK71gQz2KZP4PHRfBGYZTy-8XWCgG3yOJpd7kRz0ratDc-xJC2wlGK4Q8kTPmhMvi6IvSJswQTDu4spSilcbdqEOVKfzeQ\"         }",
                         "description": "oauth-auto-generated-JWTGrantTypeJWK",
                         "encoded": false
-                    },
-                    "JWSSignPrivateKey": {
-                        "value": "{   \"kty\": \"oct\",   \"use\": \"sig\",   \"kid\": \"ozairs\",   \"k\": \"IRX6xLvAcGlPHnPqFWR_RXPJkSgYbCBTC7tE_k61WbYy6mpYtMAG0BGBtfLOcoT2U8n1X2EFl0ykV_bWg-V6YRJM1I3Mw_KtdwnNSXONC-d9JochuMQCGvv6QyjP77qdDeNtHLrrs9lBP4jXO5C22AGPgvtH3dD2mpmE7jlRocd1A8-eguKWdH5p0b8t80vFhbxCK9sY5fDTwOeJ5wH38F_lFrsLFfXqMkYD_HhMPUJOz1sP0HxqQCj1HM24EY-cHwsLg_3hnweE8wVsSTZZOMxqqGFFdjbXGiXm1OllSIJz9ptd90dws176jP7BkaxB5nG0QdsHH9btUTGjZmD_gg\",   \"alg\": \"HS256\" }",
-                        "description": "x-ibm-oauth-oidc-auto-generated-JWSSignPrivateKey",
-                        "encoded": false
-                    },
-                    "JWSAlgorithm": {
-                        "value": "HS256",
-                        "description": "x-ibm-oauth-oidc-auto-generated-JWSAlgorithm",
-                        "encoded": false
-                    },
-                    "JWTIssuer": {
-                        "value": "IBM APIConnect",
-                        "description": "x-ibm-oauth-oidc-auto-generated-JWTIssuer",
-                        "encoded": false
-                    },
-                    "JWSSignKeyKID": {
-                        "value": "",
-                        "description": "x-ibm-oauth-oidc-auto-generated-JWSSignKeyKID",
-                        "encoded": false
-                    }
-                },
-                "type": "oauth",
-                "testable": true,
-                "enforced": true,
-                "phase": "realized",
-                "cors": {
-                    "enabled": true
-                }
-            },
-            "basePath": "/",
-            "swagger": "2.0",
-            "host": "$(catalog.host)",
-            "schemes": [
-                "https"
-            ],
-            "paths": {
-                "/oauth2/authorize": {
-                    "get": {
-                        "produces": [
-                            "text/html"
-                        ],
-                        "summary": "Endpoint for Authorization Code and Implicit grants",
-                        "description": "This endpoint allows an access token (Implicit) or access code (Authorization Code) request with the following parameters:\n              - Implicit (response_type = token, client_id, scope, redirect_uri(*), state(*))\n              - Authorization Code (response_type = code, client_id, scope, redirect_uri(*), state(*))",
-                        "parameters": [
-                            {
-                                "name": "response_type",
-                                "in": "query",
-                                "description": "request an authorization code or an access token (implicit)",
-                                "required": false,
-                                "type": "string",
-                                "enum": [
-                                    "code",
-                                    "token"
-                                ]
-                            },
-                            {
-                                "name": "client_id",
-                                "in": "query",
-                                "description": "client_id of the application which product is subscribed to",
-                                "required": false,
-                                "type": "string"
-                            },
-                            {
-                                "name": "scope",
-                                "in": "query",
-                                "description": "Scope being requested",
-                                "type": "string",
-                                "required": false
-                            },
-                            {
-                                "name": "redirect_uri",
-                                "in": "query",
-                                "type": "string",
-                                "description": "URI where user is redirected to after authorization",
-                                "required": false
-                            },
-                            {
-                                "name": "state",
-                                "in": "query",
-                                "type": "string",
-                                "description": "This string will be echoed back to application when user is redirected",
-                                "required": false
-                            }
-                        ],
-                        "responses": {
-                            "200": {
-                                "description": "An HTML form for authentication or authorization of this request."
-                            },
-                            "302": {
-                                "description": "Redirect to the clients redirect_uri containing one of the following\n- **authorization code** for Authorization code grant\n- **access token** for Implicit grant\n- **error** in case of errors, such as the user has denied the request\n"
-                            }
-                        }
-                    },
-                    "post": {
-                        "consumes": [
-                            "application/x-www-form-urlencoded"
-                        ],
-                        "produces": [
-                            "text/html"
-                        ],
-                        "summary": "Endpoint for Authorization Code and Implicit grants",
-                        "description": "Submit approval to access token.",
-                        "security": [],
-                        "parameters": [
-                            {
-                                "name": "response_type",
-                                "in": "formData",
-                                "description": "request an authorization code or an access token (implicit)",
-                                "required": false,
-                                "type": "string",
-                                "enum": [
-                                    "code",
-                                    "token"
-                                ]
-                            },
-                            {
-                                "name": "client_id",
-                                "in": "formData",
-                                "description": "application requesting the access code or token",
-                                "required": false,
-                                "type": "string"
-                            },
-                            {
-                                "name": "scope",
-                                "in": "formData",
-                                "description": "requested scope of this authorization",
-                                "required": false,
-                                "type": "string"
-                            },
-                            {
-                                "name": "redirect_uri",
-                                "in": "formData",
-                                "description": "URI the application is requesting this code or token to be redirected to",
-                                "required": false,
-                                "type": "string"
-                            }
-                        ],
-                        "responses": {
-                            "200": {
-                                "description": "200 OK"
-                            }
-                        }
-                    }
-                },
-                "/oauth2/token": {
-                    "post": {
-                        "consumes": [
-                            "application/x-www-form-urlencoded"
-                        ],
-                        "produces": [
-                            "application/json"
-                        ],
-                        "summary": "Endpoint for obtaining access token using Authorization code, Application and Password grants",
-                        "description": "This endpoint allows requesting an access token following one of the flows below:\n        - Access Code (exchange access code for an access token)\n        - Client Credentials (2-legged, resource owner credentials are not obtained)\n        - Resource Owner Password Credentials (2-legged, client provides resource owner name and password)\n        - Refresh Token (exchange refresh token for a new access token)",
-                        "parameters": [
-                            {
-                                "name": "grant_type",
-                                "in": "formData",
-                                "required": true,
-                                "type": "string",
-                                "enum": [
-                                    "authorization_code",
-                                    "password",
-                                    "client_credentials",
-                                    "refresh_token"
-                                ]
-                            }
-                        ],
-                        "responses": {
-                            "200": {
-                                "description": "200 OK"
-                            }
-                        }
                     }
                 }
             },
-            "definitions": {
-                "access_token_response": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "required": [
-                        "access_token"
-                    ],
-                    "properties": {
-                        "access_token": {
-                            "type": "string"
-                        }
-                    }
-                }
-            },
-            "securityDefinitions": {}
+            "basePath": "/"
         },
         "pkce": {
             "enabled": true,

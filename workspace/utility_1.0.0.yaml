@@ -1,0 +1,520 @@
+swagger: '2.0'
+info:
+  title: utility
+  x-ibm-name: utility
+  version: 1.0.0
+host: $(catalog.host)
+schemes:
+  - https
+basePath: /utility
+produces:
+  - application/json
+consumes:
+  - application/json
+security:
+  - {}
+securityDefinitions:
+  clientIdHeader:
+    type: apiKey
+    name: X-IBM-Client-Id
+    in: header
+x-ibm-configuration:
+  phase: realized
+  testable: true
+  enforced: true
+  properties:
+    sign-jwk:
+      value: >-
+        {   "kty": "oct",   "use": "sig",   "kid": "ozairs",   "k":
+        "IRX6xLvAcGlPHnPqFWR_RXPJkSgYbCBTC7tE_k61WbYy6mpYtMAG0BGBtfLOcoT2U8n1X2EFl0ykV_bWg-V6YRJM1I3Mw_KtdwnNSXONC-d9JochuMQCGvv6QyjP77qdDeNtHLrrs9lBP4jXO5C22AGPgvtH3dD2mpmE7jlRocd1A8-eguKWdH5p0b8t80vFhbxCK9sY5fDTwOeJ5wH38F_lFrsLFfXqMkYD_HhMPUJOz1sP0HxqQCj1HM24EY-cHwsLg_3hnweE8wVsSTZZOMxqqGFFdjbXGiXm1OllSIJz9ptd90dws176jP7BkaxB5nG0QdsHH9btUTGjZmD_gg",  
+        "alg": "HS256" }
+      encoded: false
+    iss-claim:
+      value: Spoon Bank Inc
+      encoded: false
+    aud-claim:
+      value: client-id-12345
+      encoded: false
+  cors:
+    enabled: true
+  activity-log:
+    enabled: true
+    error-content: header
+    success-content: activity
+  application-authentication:
+    certificate: false
+  assembly:
+    execute:
+      - switch:
+          version: 2.0.0
+          title: switch
+          case:
+            - condition: >-
+                (($httpVerb() = 'GET' and $operationPath() =
+                '/basic-auth/{username}/{password}'))
+              execute:
+                - gatewayscript:
+                    version: 2.0.0
+                    title: gatewayscript
+                    source: "console.error(\"utility.js\");\nvar reqauth = context.get('request.authorization').split(' ');\nvar splitval = new Buffer((reqauth[1] || ''), 'base64').toString('utf8').split(':');\nvar username = splitval[0] || '';\nvar password = splitval[1] || '';\nconsole.debug('user credential : [' + username + ':' + password + ']');\nif (username === context.get('request.parameters.username') && password === context.get('request.parameters.password')) {\n\tcontext.message.body.write({ \"authenticatedUser\": username });\n\tcontext.set('message.headers.api-authenticated-credential', 'cn=' + username + ',email=' + username + '@poon.com');\n    context.set('message.status.code', 200);\n\tcontext.message.header.set('Content-Type', 'application/json');\n}\nelse {\n\tcontext.set('message.status.code', 401);\n}"
+                - invoke:
+                    version: 2.0.0
+                    title: invoke
+                    header-control:
+                      type: blacklist
+                      values: []
+                    parameter-control:
+                      type: whitelist
+                      values: []
+                    timeout: 60
+                    verb: GET
+                    cache-response: protocol
+                    cache-ttl: 900
+                    stop-on-error: []
+                    target-url: 'https://httpbin.org/get'
+                - gatewayscript:
+                    version: 2.0.0
+                    title: gatewayscript
+                    source: |-
+                      context.message.body.readAsJSON
+                      (function (error, response)
+                        {
+                          if (error)
+                          {
+                            return;
+                          }
+                          console.log("response %s", JSON.stringify(response));
+                          context.message.body.write(JSON.stringify(response));
+                        });
+            - condition: (($httpVerb() = 'GET' and $operationPath() = '/ping'))
+              execute:
+                - gatewayscript:
+                    version: 2.0.0
+                    title: gatewayscript
+                    source: >-
+                      context.message.body.write({"message":"hello world!"});
+
+                      context.message.header.set('Content-Type',
+                      'application/json');
+                - invoke:
+                    version: 2.0.0
+                    title: invoke
+                    header-control:
+                      type: blacklist
+                      values: []
+                    parameter-control:
+                      type: whitelist
+                      values: []
+                    timeout: 60
+                    verb: GET
+                    cache-response: protocol
+                    cache-ttl: 900
+                    stop-on-error: []
+                    target-url: 'https://httpbin.org/get'
+                - gatewayscript:
+                    version: 2.0.0
+                    title: gatewayscript
+                    source: |-
+                      context.message.body.readAsJSON
+                      (function (error, response)
+                        {
+                          if (error)
+                          {
+                            return;
+                          }
+                          console.log("response %s", JSON.stringify(response));
+                          context.message.body.write(JSON.stringify(response));
+                        });
+            - condition: (($httpVerb() = 'GET' and $operationPath() = '/validate'))
+              execute:
+                - gatewayscript:
+                    version: 2.0.0
+                    title: gatewayscript
+                    source: 'console.error(''sign-jwk %s'', context.get(''sign-jwk''))'
+                - jwt-validate:
+                    version: 2.0.0
+                    title: jwt-validate
+                    jwt: request.headers.authorization
+                    output-claims: decoded.claims
+                    iss-claim: .*
+                    aud-claim: .*
+                    jws-jwk: sign-jwk
+                - set-variable:
+                    version: 2.0.0
+                    title: set-variable
+                    actions:
+                      - set: message.body
+                        value: $(decoded.claims)
+                        type: string
+            - condition: (($httpVerb() = 'GET' and $operationPath() = '/generate'))
+              execute:
+                - jwt-generate:
+                    version: 2.0.0
+                    title: jwt-generate
+                    jwt: generated.jwt
+                    iss-claim: iss-claim
+                    exp-claim: 3600
+                    jws-jwk: sign-jwk
+                    jws-alg: HS256
+                    aud-claim: aud-claim
+                    jti-claim: false
+                - set-variable:
+                    version: 2.0.0
+                    title: set-variable
+                    actions:
+                      - set: message.body
+                        value: $(generated.jwt)
+                        type: string
+            - condition: >-
+                (($httpVerb() = 'POST' and $operationPath() =
+                '/introspect/google'))
+              execute:
+                - gatewayscript:
+                    version: 2.0.0
+                    title: read-input
+                    source: >-
+                      context.message.body.readAsBuffer(function (error,
+                      response) {
+                              if (error) {
+                                  console.error ('>> pre introspection - error performing introspection');
+                                  return;
+                              }
+
+                              console.info("pre introspection: response %s", response);
+
+                              var queryList = {};
+                              var queryParams = response.toString().split('&');
+                              for (var i = 0; i < queryParams.length; i++) {
+                                  var tmpArray = queryParams[i].split('=');
+                                  queryList[tmpArray[0]] = tmpArray[1];
+
+                              }
+                              //setting third-party token into Authorization header
+                              console.info('token %s', queryList['token']);
+                              context.message.header.set('Authorization', 'Bearer ' + queryList['token']);
+                          });
+                - invoke:
+                    version: 2.0.0
+                    title: invoke
+                    header-control:
+                      type: blacklist
+                      values: []
+                    parameter-control:
+                      type: whitelist
+                      values: []
+                    timeout: 60
+                    verb: GET
+                    cache-response: protocol
+                    cache-ttl: 900
+                    stop-on-error: []
+                    target-url: >-
+                      https://openidconnect.googleapis.com/v1/userinfo?scope=openid%20email%20profile
+                    description: ''
+                - gatewayscript:
+                    version: 2.0.0
+                    title: parse-response
+                    source: "context.message.body.readAsJSON(function (error, buffer) {\n    console.error ('>> response %s', JSON.stringify(buffer));\n    \n\n\tif (error || context.get('message.status.code') != '200') {\n        console.error ('>> post introspection - error performing introspection');\n        context.set('message.status.code', 500);\n\t}\n\telse {\n        //change the scope value to reflect your API definition\n\t\tvar response = { \n            \"active\": true,\n            \"username\" : buffer.email,\n            \"client_id\" : buffer.sub,\n\t\t    \"scope\" : \"weather\"\n\t\t};\n\n        console.info ('>> post introspection - setting response %s', JSON.stringify(response));\n\n        //set the response context\n\t    context.message.header.set('Content-Type', 'application/json');\n\t    context.set('message.status.code', 200);\n\t    context.message.body.write(JSON.stringify(response));\n\t}\n});"
+            - condition: >-
+                (($httpVerb() = 'POST' and $operationPath() =
+                '/introspect/auth0'))
+              execute:
+                - invoke:
+                    version: 2.0.0
+                    title: get-jwk-auth0
+                    header-control:
+                      type: blacklist
+                      values: []
+                    parameter-control:
+                      type: whitelist
+                      values: []
+                    timeout: 60
+                    verb: GET
+                    cache-response: protocol
+                    cache-ttl: 900
+                    stop-on-error: []
+                    target-url: 'https://ozairs.auth0.com/.well-known/jwks.json'
+                    output: rsa256Key
+                - gatewayscript:
+                    version: 2.0.0
+                    title: save-jwk
+                    source: |-
+                      var rsa256Key = JSON.parse(context.get('rsa256Key.body'));
+                      console.error('rsa keys %s', rsa256Key.keys[0]);
+                      context.set('jwk-key', rsa256Key.keys[0]);
+                - gatewayscript:
+                    version: 2.0.0
+                    title: gatewayscript
+                    source: >-
+                      context.message.body.readAsBuffer(function (error,
+                      response) {
+                              if (error) {
+                                  console.error ('>> pre introspection - error performing introspection');
+                                  return;
+                              }
+
+                              console.info("pre introspection: response %s", response);
+
+                              var queryList = {};
+                              var queryParams = response.toString().split('&');
+                              for (var i = 0; i < queryParams.length; i++) {
+                                  var tmpArray = queryParams[i].split('=');
+                                  queryList[tmpArray[0]] = tmpArray[1];
+
+                              }
+                              //setting third-party token into Authorization header
+                              console.error('token %s', queryList['token']);
+                              context.message.header.set('Authorization', 'Bearer ' + queryList['token']);
+                              context.set('token', queryList['token'])
+                          });
+                - jwt-validate:
+                    version: 2.0.0
+                    title: jwt-validate-jwk
+                    jwt: token
+                    output-claims: decoded.claims
+                    iss-claim: .*
+                    aud-claim: .*
+                    jws-jwk: jwk-key
+                - gatewayscript:
+                    version: 2.0.0
+                    title: gatewayscript
+                    source: "if (context.get('decoded.claims')) {\n\tvar response = { \n\t    \"active\": true, \n\t    \"jwt-claims\" : context.get('decoded.claims')\n\t};\n\t\n\tcontext.set('message.body', response);\n\tcontext.set('message.status.code', 200);\n\tconsole.info ('>> oauth introspection is successful %s', JSON.stringify(context.get('decoded.claims')));\n}\nelse {\n    context.set('message.status.code', 200);\n\t\n\tconsole.error ('>> oauth introspection failed %s', JSON.stringify(JSON.stringify(context.get('decoded.claims'))));\n}"
+            - condition: (($httpVerb() = 'GET' and $operationPath() = '/redirect'))
+              execute:
+                - set-variable:
+                    version: 2.0.0
+                    title: set-variable
+                    actions:
+                      - set: demo.identity.redirect.username
+                        value: ozairs
+                        type: string
+                      - set: demo.identity.redirect.confirmation
+                        value: '1234567890'
+                        type: string
+                      - set: demo.identity.redirect.error
+                        value: Some Errror
+                        type: string
+                - gatewayscript:
+                    version: 2.0.0
+                    title: gatewayscript
+                    source: >-
+                      // output to the system logs, the input parameters passed
+                      in the URL query string
+
+                      console.error('original-url : ',
+                      context.get('request.parameters.original-url'));
+
+                      console.error('app-name : ',
+                      context.get('request.parameters.app-name'));
+
+                      console.error('appid : ',
+                      context.get('request.parameters.appid'));
+
+                      console.error('org : ',
+                      context.get('request.parameters.org'));
+
+                      console.error('orgid : ',
+                      context.get('request.parameters.orgid'));
+
+                      console.error('catalog : ',
+                      context.get('request.parameters.catalog'));
+
+                      console.error('catalogid : ',
+                      context.get('request.parameters.catalogid'));
+
+                      console.error('provider : ',
+                      context.get('request.parameters.provider'));
+
+                      console.error('providerid : ',
+                      context.get('request.parameters.providerid'));
+
+
+                      // perform the actual authentication / authorization
+
+                      context.set('demo.identity.redirect.username', 'ozairs');
+
+                      context.set('demo.identity.redirect.confirmation',
+                      '1234567890');
+
+
+                      //extract the username and confirmation code once the user
+                      is successfully authenticated and authorized
+
+                      var username =
+                      context.get('demo.identity.redirect.username');
+
+                      var confirmationCode =
+                      context.get('demo.identity.redirect.confirmation')
+
+
+                      //build the callback URL using the original URL passed
+                      into the service
+
+                      var origUrl =
+                      decodeURIComponent(context.get('request.parameters.original-url').values[0]
+                      || '');
+
+                      var location = origUrl +
+                      '&rstate=5yXZSNocRPpJm9MZHR15MDc9hZhTiSRy10EhV28' +
+                      '&username=' + username + '&confirmation=' +
+                      confirmationCode;
+
+
+                      //set the response headers to trigger a redirect back to
+                      API Connect
+
+                      context.set('message.status.code', 302);
+
+                      context.set('message.headers.location', location);
+
+                      console.error('redirect back to apic ', location);
+            - condition: >-
+                (($httpVerb() = 'GET' and $operationPath() =
+                '/redirect/authenticate'))
+              execute:
+                - set-variable:
+                    version: 2.0.0
+                    title: set-variable
+                    actions:
+                      - set: demo.identity.redirect.username
+                        value: ozairs
+                        type: string
+                      - set: demo.identity.redirect.confirmation
+                        value: '1234567890'
+                        type: string
+                - gatewayscript:
+                    version: 2.0.0
+                    title: gatewayscript
+                    source: "//username and confirmation code are passed via the HTTP Authorization header\nvar reqauth = context.get('request.authorization').split(' ');\nvar splitval = new Buffer((reqauth[1] || ''), 'base64').toString('utf8').split(':');\nvar username = splitval[0] || '';\nvar password = splitval[1] || '';\n\nconsole.error ('Validating Redirect with parameters %s and %s', username, password);\n//verify the username and confirmation code (if using the defaults as configured in the API assembly)\nif (username === context.get('demo.identity.redirect.username') &&\n\tpassword === context.get('demo.identity.redirect.confirmation')) {\n      context.set('message.status.code', 200);\n      console.error ('Successful validation');\n\n\t//if third-party authentication service provided granular scope options, \n\t//then it will need to return them via the response header, `x-selected-scope`\n\tif (context.get('demo.authenticate-url.x-selected-scope') !== '' &&\n\t\tcontext.get('demo.authenticate-url.x-selected-scope') !== undefined) {\n            context.set('message.headers.x-selected-scope', context.get('demo.authenticate-url.x-selected-scope'));\n\t}\n\t//if third-party authentication service wants to use a different username, \n\t//then it will need to return them via the response header, `api-authenticated-credential`\n\tif (context.get('demo.api-authenticated-credential') !== '' &&\n        context.get('demo.api-authenticated-credential') !== undefined) {\n        context.set('message.headers.api-authenticated-credential', context.get('demo.api-authenticated-credential'));\n\t}\n\t//if third-party authentication service wants to insert metadata into the token, \n\t//then it will need to return them via the response header, `api-oauth-metadata-for-accesstoken`\t\n\tif (context.get('demo.authenticate-url.metainfo.token') !== '' &&\n        context.get('demo.authenticate-url.metainfo.token') !== undefined) {\n        context.set('message.headers.api-oauth-metadata-for-accesstoken', context.get('demo.authenticate-url.metainfo.token'));\n\t}\n\t//if third-party authentication service wants to insert metadata into the payload, \n\t//then it will need to return them via the response header, `api-oauth-metadata-for-payload`\t\n\tif (context.get('demo.authenticate-url.metainfo.payload') !== '' &&\n        context.get('demo.authenticate-url.metainfo.payload') !== undefined) {\n            context.set('message.headers.api-oauth-metadata-for-payload', context.get('demo.authenticate-url.metainfo.payload'));\n\t}\n}\nelse {\n\tcontext.set('message.status.code', 401);\n}"
+            - condition: ($httpVerb() = 'GET' and $operationPath() = '/scope-check')
+              execute:
+                - gatewayscript:
+                    version: 2.0.0
+                    title: gatewayscript
+                    source: >-
+                      context.set('message.headers.x-selected-scope', 'weather
+                      california');
+
+                      context.set('message.status.code', 200);
+    catch: []
+  gateway: datapower-api-gateway
+  type: rest
+  catalogs: {}
+parameters:
+  username:
+    name: username
+    type: string
+    in: path
+    required: true
+  password:
+    name: password
+    type: string
+    in: path
+    required: true
+  Authorization:
+    name: Authorization
+    type: string
+    in: header
+    required: false
+tags: []
+definitions: {}
+paths:
+  /scope-check:
+    get:
+      responses:
+        '200':
+          schema:
+            type: string
+          description: success
+  /redirect/authenticate:
+    get:
+      responses:
+        '200':
+          schema:
+            type: string
+          description: success
+  /redirect:
+    get:
+      responses:
+        '200':
+          schema:
+            type: string
+          description: success
+    parameters:
+      - name: username
+        in: path
+        required: true
+        type: string
+      - name: password
+        in: path
+        required: true
+        type: string
+      - name: Authorization
+        in: header
+        required: false
+        type: string
+  /introspect/google:
+    post:
+      responses:
+        '200':
+          description: success response code
+          schema:
+            type: integer
+      consumes: []
+      produces: []
+      parameters: []
+      description: >-
+        https://accounts.google.com/o/oauth2/v2/auth?client_id=<client_id>&redirect_uri=https://www.getpostman.com/oauth2/callback&scope=openid
+        email profile&response_type=token
+    parameters: []
+  /introspect/auth0:
+    post:
+      responses:
+        '200':
+          description: success
+          schema:
+            type: string
+      description: >-
+        - Obtain Auth0 token using command 
+
+        ```
+
+        curl -s -X POST https://ozairs.auth0.com/oauth/token -H 'Content-Type:
+        application/json'  -H 'Host: ozairs.auth0.com' \
+          -d '{
+            "client_id": "gQrd64uy9zsA6nCyz05DmViy19MziPVq",
+            "client_secret": "Dk5gHOz3vJHhl6uIS29z5OJs1JF2cAz_ijoS4U-1B59NHKmVyuc-R7nInc6f6a2h",
+            "audience": "ozairs.apiconnect.com",
+            "grant_type": "client_credentials"
+        }'
+
+        ```
+      consumes: []
+      produces: []
+  /generate:
+    get:
+      responses:
+        '200':
+          schema:
+            type: string
+          description: success
+  /validate:
+    get:
+      responses:
+        '200':
+          schema:
+            type: string
+          description: success
+  /ping:
+    get:
+      responses:
+        '200':
+          description: 200 OK
+  '/basic-auth/{username}/{password}':
+    get:
+      responses:
+        '200':
+          description: 200 OK
+    parameters:
+      - $ref: '#/parameters/username'
+      - $ref: '#/parameters/password'
+      - $ref: '#/parameters/Authorization'

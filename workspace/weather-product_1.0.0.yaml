@@ -1,0 +1,42 @@
+info:
+  version: 1.0.0
+  title: weather-product
+  name: weather-product
+gateways:
+  - datapower-api-gateway
+plans:
+  beta-plan:
+    rate-limits:
+      default:
+        value: 10/1hour
+    title: Beta Plan
+    description: Beta Plan
+    approval: false
+    name: beta-plan
+  premium-plan:
+    title: Premium Plan
+    name: premium-plan
+    description: Premium Plan
+    rate-limits:
+      Default rate-limit:
+        value: 100/1hour
+        hard-limit: false
+    burst-limits:
+      Default burst-limit:
+        value: 10/1second
+    apis: {}
+apis:
+  utility1.0.0:
+    $ref: ./utility_1.0.0.yaml
+  weather1.0.0:
+    $ref: ./weather_1.0.0.yaml
+visibility:
+  view:
+    type: public
+    orgs: []
+    enabled: true
+  subscribe:
+    type: authenticated
+    orgs: []
+    enabled: true
+product: 1.0.0

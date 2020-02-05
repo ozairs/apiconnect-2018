@@ -8,7 +8,17 @@ schemes:
 basePath: /sports
 security:
   - clientID: []
+    google-provider:
+      - teams
 securityDefinitions:
+  google-provider:
+    type: oauth2
+    flow: accessCode
+    x-ibm-oauth-provider: google-provider
+    authorizationUrl: 'https://accounts.google.com/o/oauth2/v2/auth'
+    tokenUrl: 'https://www.googleapis.com/oauth2/v3/userinfo?scope=openid'
+    scopes:
+      teams: team scope
   clientID:
     type: apiKey
     in: header
@@ -93,36 +103,6 @@ x-ibm-configuration:
                     parameter-control:
                       type: blacklist
                       values: []
-      - parse:
-          version: 2.0.0
-          title: parse
-          parse-settings-reference:
-            default: apic-default-parsesettings
-      - json-to-xml:
-          version: 2.0.0
-          title: json-to-xml
-          root-element-name: json
-          always-output-root-element: false
-          unnamed-element-name: element
-      - xslt:
-          version: 2.0.0
-          title: xslt
-          input: true
-          source: |-
-            <xsl:stylesheet version="1.0" 
-                xmlns:xsl="http://www.w3.org/1999/XSL/Transform" 
-                xmlns:dp="http://www.datapower.com/extensions" extension-element-prefixes="dp" exclude-result-prefixes="dp">
-
-                <xsl:template match="/">
-                    <xsl:variable name="query" select="'SELECT * FROM HKN34861.NBA_FINALS AS NBA WHERE NBA.YEAR=2019'"/>
-                    <xsl:variable name="result" select="dp:sql-execute('ibm-cloud-db2',$query)" />
-                    <response>
-                        <xsl:copy-of select="$result" />
-                        <xsl:copy-of select="." />
-                    </response>
-                </xsl:template>
-
-            </xsl:stylesheet>
     catch: []
   gateway: datapower-api-gateway
   type: rest

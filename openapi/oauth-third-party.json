@@ -1,0 +1,31 @@
+{
+    "name": "google-provider",
+    "title": "google-provider",
+    "provider_type": "third_party",
+    "scopes": {
+        "weather": "weather scope"
+    },
+    "grants": [
+        "access_code",
+        "implicit",
+        "application"
+    ],
+    "gateway_version": "6000",
+    "third_party_config": {
+        "token_validation_requirement": "active",
+        "introspection_endpoint": {
+            "endpoint": "https://127.0.0.1:9443/om/sandbox/utility/introspect/google",
+            "tls_client_profile_url": null
+        },
+        "authorize_endpoint": "https://accounts.google.com/o/oauth2/v2/auth",
+        "token_endpoint": "https://accounts.google.com/o/oauth2/v2/auth",
+        "security": [
+            "basic-auth"
+        ],
+        "basic_auth": {
+            "request_headername": "x-introspect-basic-authorization-header",
+            "username": "apiconnect",
+            "password": "apiconnect-password"
+        }
+    }
+}

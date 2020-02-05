@@ -15,46 +15,15 @@
             "confidential"
         ],
         "authorize_path": "/oauth2/authorize",
-        "token_path": "/oauth2/token",        
+        "token_path": "/oauth2/token",
         "api": {
             "info": {
-                "description": "",
-                "version": "1.0.0",
-                "title": "oauth2-server"
+                "description": ""
             },
             "x-ibm-configuration": {
                 "gateway": "datapower-api-gateway",
                 "assembly": {
                     "execute": [
-                        {
-                            "set-variable": {
-                                "title": "x-ibm-oauth-oidc-auto-generated-set-variable",
-                                "description": "Set the necessary JWS context info",
-                                "actions": [
-                                    {
-                                        "set": "oauth.oidc.issuer.url",
-                                        "value": "$(JWTIssuer)",
-                                        "type": "any"
-                                    },
-                                    {
-                                        "set": "oauth.oidc.jwt.sign.jwk",
-                                        "value": "$(JWSSignPrivateKey)",
-                                        "type": "any"
-                                    },
-                                    {
-                                        "set": "oauth.oidc.jwt.sign.algorithm",
-                                        "value": "$(JWSAlgorithm)",
-                                        "type": "any"
-                                    },
-                                    {
-                                        "set": "oauth.oidc.jwk.kid",
-                                        "value": "$(JWSSignKeyKID)",
-                                        "type": "any"
-                                    }
-                                ],
-                                "version": "2.0.0"
-                            }
-                        },
                         {
                             "oauth": {
                                 "title": "oauth-auto-generated-1",
@@ -73,6 +42,41 @@
                                 "version": "2.0.0",
                                 "title": "oauth-auto-generated-switch",
                                 "case": [
+                                    {
+                                        "condition": "($operationPath() = '/oauth2/issued')",
+                                        "execute": [
+                                            {
+                                                "user-security": {
+                                                    "title": "user-security-auto-generated-issued",
+                                                    "version": "2.1.0",
+                                                    "description": "This user security policy performs EI(basic) and AU(auth url) check for oauth assembly. Change the security check method as required",
+                                                    "factor-id": "default",
+                                                    "extract-identity-method": "basic",
+                                                    "ei-stop-on-error": false,
+                                                    "user-auth-method": "user-registry",
+                                                    "au-stop-on-error": false,
+                                                    "user-az-method": "authenticated",
+                                                    "az-stop-on-error": true,
+                                                    "auth-response-headers-pattern": "(?)x-api*",
+                                                    "auth-response-header-credential": "X-API-Authenticated-Credential",
+                                                    "user-registry": "local-registry"
+                                                }
+                                            },
+                                            {
+                                                "oauth": {
+                                                    "title": "oauth-auto-generated-5",
+                                                    "version": "2.0.0",
+                                                    "description": "This oauth policy performs all OAuth protocol steps that are needed for issued path by default. The inputs and outputs of each of the steps are driven by documented context variables. Add or remove the Supported OAuth Components as required.",
+                                                    "oauth-provider-settings-ref": {
+                                                        "default": "oauth2-server"
+                                                    },
+                                                    "supported-oauth-components": [
+                                                        "OAuthRevokeToken"
+                                                    ]
+                                                }
+                                            }
+                                        ]
+                                    },
                                     {
                                         "condition": "($operationPath() = '/oauth2/token' and oauth.processing.grant_type = 'urn:ietf:params:oauth:grant-type:jwt-bearer')",
                                         "execute": [
@@ -220,44 +224,6 @@
                                     }
                                 ]
                             }
-                        },
-                        {
-                            "switch": {
-                                "version": "2.0.0",
-                                "title": "x-ibm-oauth-oidc-auto-generated-switch",
-                                "case": [
-                                    {
-                                        "condition": "($exists(oauth.oidc.enabled))",
-                                        "execute": [
-                                            {
-                                                "jwt-generate": {
-                                                    "version": "2.0.0",
-                                                    "title": "x-ibm-oauth-oidc-auto-generated-jwt-generate",
-                                                    "jwt": "oauth.oidc.idtoken",
-                                                    "iss-claim": "oauth.oidc.issuer.url",
-                                                    "exp-claim": 3600,
-                                                    "description": "Generate the OIDC JWT",
-                                                    "sub-claim": "oauth.oidc.sub",
-                                                    "aud-claim": "oauth.oidc.aud",
-                                                    "private-claims": "oauth.oidc.claims",
-                                                    "jti-claim": true,
-                                                    "jws-crypto": "",
-                                                    "jws-alg": "HS256",
-                                                    "jws-jwk": "oauth.oidc.jwt.sign.jwk"
-                                                }
-                                            },
-                                            {
-                                                "gatewayscript": {
-                                                    "title": "x-ibm-oauth-oidc-auto-generated-gatewayscript",
-                                                    "description": "Inject OIDC into response",
-                                                    "version": "2.0.0",
-                                                    "source": "function getIDToken() {\n  var idtoken = context.get('oauth.oidc.idtoken');\n  if (idtoken !== undefined)\n  {\n    if (idtoken.startsWith('Bearer '))\n    {\n      idtoken = idtoken.substring(7);\n    }\n  }\n  return idtoken;\n}\n\nfunction injectTokenInHeader(token) {\n  if (token === undefined) return;\n  \n  var location = context.message.header.get('location');\n  if (location === undefined) {\n    location = \"id_token=\" + token;\n  }\n  else if (location.endsWith('?') || location.endsWith('#'))\n  {\n    location = location + \"id_token=\" + token;\n  }\n  else\n  {\n    location = location + \"&id_token=\" + token;\n  }\n  context.message.header.set('location', location);\n}\n\nfunction injectTokenInBody(token) {\n  if (token === undefined)\n    return;\n\n  context.message.body.readAsJSON(function (error, jsonBody)\n  {\n    if (error)\n    {\n      return;\n    }\n    \n    if (jsonBody === undefined)\n    {\n      jsonBody = {\"id_token\": token};\n    }\n    else\n    {\n      jsonBody.id_token = token;\n    }\n    context.message.body.write(jsonBody);\n  });\n}\n\nfunction displayError(error) {\n  if (error !== null)\n    console.error(error);\n}\n\nvar oidc_enabled = context.get('oauth.oidc.enabled');\nif ((oidc_enabled === undefined) || !oidc_enabled) {\n  console.debug('OIDC disabled');\n  return;\n}\n\nvar token = getIDToken();\nif (token === undefined) {\n  displayError('No ID Token available');\n  return;\n}\n\nvar requestType = context.get('oauth.oidc.request_type');\nvar error = null;\nif (requestType === undefined) {\n  error = 'Undefined request type';\n} else if (requestType === 'implicit') {\n  injectTokenInHeader(token);\n} else if (requestType === 'azcode_get') {\n  injectTokenInHeader(token);\n} else if (requestType === 'azcode_grant') {\n  injectTokenInBody(token);\n} else {\n  error = 'Invalid request type ' + requestType;\n  displayError(error);\n  return;\n}"
-                                                }
-                                            }
-                                        ]
-                                    }
-                                ]
-                            }
                         }
                     ]
                 },
@@ -268,12 +234,12 @@
                         "encoded": false
                     },
                     "JWSSignPrivateKey": {
-                        "value": "{   \"kty\": \"oct\",   \"use\": \"sig\",   \"kid\": \"ozairs\",   \"k\": \"IRX6xLvAcGlPHnPqFWR_RXPJkSgYbCBTC7tE_k61WbYy6mpYtMAG0BGBtfLOcoT2U8n1X2EFl0ykV_bWg-V6YRJM1I3Mw_KtdwnNSXONC-d9JochuMQCGvv6QyjP77qdDeNtHLrrs9lBP4jXO5C22AGPgvtH3dD2mpmE7jlRocd1A8-eguKWdH5p0b8t80vFhbxCK9sY5fDTwOeJ5wH38F_lFrsLFfXqMkYD_HhMPUJOz1sP0HxqQCj1HM24EY-cHwsLg_3hnweE8wVsSTZZOMxqqGFFdjbXGiXm1OllSIJz9ptd90dws176jP7BkaxB5nG0QdsHH9btUTGjZmD_gg\",   \"alg\": \"HS256\" }",
+                        "value": "{   \"kty\": \"RSA\",   \"d\":         \"IWwDpREZSZ3sF9GrEX1SXb8sLpSFjUL2XtJXmbQNGssBTx_WsoWXVdP8agewUjy0dXjOi4kazbb5foQ4Kn8RPx64pkozpdopx6kwsS9yIh_w0bB-1eJzIxiV1f18XX5g_Sqv_PJ63oNgS0QQCh3mECqp_wlzKbiDH5wSHDAuNLFXCTpCpxTe_Iyd2z1kJNDDSExs5Hj8oFCUSxXmYD9RM7UPgdae-bOayv4s5HCCif3ZrVzm-TjvNbLhcP75bRRzREPk2QjN2e1yPHs2uJBHmSQdiQ58G43fHs8Kqi5HDrF8e77vFB03MCUq37e3WcnrKRR8JxlrKGgf3PhDJp0OUQ\",           \"e\": \"AQAB\",   \"use\": \"sig\",   \"kid\": \"ozairs\",   \"alg\": \"RS256\",   \"n\":         \"hDyppyzLbrV4dDBDze5g-4LH5M9JiFKmFAp8Mt-GkOjhbn3VYU937GRugUTXyM9TrV15LJFA1PA5NRGZO-R8Wv_vQx6hmbbsD2ChouZlSWnSJ3ZFdijRSY_-vddbufAG2ucK0CCD0TyBD5WYe9tnpMOCxv4eGAsUN6BT9OhcEJEWv3cvyHK6DUATjpx4ExaQi1wgAVbfCBK-A5au4ApOLRQjZ-tLCt3rTbqtkRUuES4nf1bS70YU8rsPBK71gQz2KZP4PHRfBGYZTy-8XWCgG3yOJpd7kRz0ratDc-xJC2wlGK4Q8kTPmhMvi6IvSJswQTDu4spSilcbdqEOVKfzeQ\"         }",
                         "description": "x-ibm-oauth-oidc-auto-generated-JWSSignPrivateKey",
                         "encoded": false
                     },
                     "JWSAlgorithm": {
-                        "value": "HS256",
+                        "value": "RS256",
                         "description": "x-ibm-oauth-oidc-auto-generated-JWSAlgorithm",
                         "encoded": false
                     },
@@ -308,14 +274,14 @@
                         "produces": [
                             "text/html"
                         ],
-                        "summary": "Endpoint for Authorization Code and Implicit grants",
-                        "description": "This endpoint allows an access token (Implicit) or access code (Authorization Code) request with the following parameters:\n              - Implicit (response_type = token, client_id, scope, redirect_uri(*), state(*))\n              - Authorization Code (response_type = code, client_id, scope, redirect_uri(*), state(*))",
+                        "summary": "endpoint for Authorization Code and Implicit grants",
+                        "description": "description",
                         "parameters": [
                             {
                                 "name": "response_type",
                                 "in": "query",
-                                "description": "request an authorization code or an access token (implicit)",
-                                "required": false,
+                                "description": "request an authorization code or or access token (implicit)",
+                                "required": true,
                                 "type": "string",
                                 "enum": [
                                     "code",
@@ -356,7 +322,7 @@
                                 "description": "An HTML form for authentication or authorization of this request."
                             },
                             "302": {
-                                "description": "Redirect to the clients redirect_uri containing one of the following\n- **authorization code** for Authorization code grant\n- **access token** for Implicit grant\n- **error** in case of errors, such as the user has denied the request\n"
+                                "description": "Redirect to the clients redirect_uri containing one of the following\n- **authorization code** for Authorization code grant\n- **access token** for Implicity grant\n- **error** in case of errors, such as the user has denied the request\n"
                             }
                         }
                     },
@@ -367,15 +333,15 @@
                         "produces": [
                             "text/html"
                         ],
-                        "summary": "Endpoint for Authorization Code and Implicit grants",
-                        "description": "Submit approval to access token.",
+                        "summary": "submit approval to authorization code or access token",
+                        "description": "Submit resource owners approval (or rejection) for the OAuth2 Server to issue an\nauthorization code or access token to the application.\n",
                         "security": [],
                         "parameters": [
                             {
                                 "name": "response_type",
                                 "in": "formData",
-                                "description": "request an authorization code or an access token (implicit)",
-                                "required": false,
+                                "description": "request an authorization code or or access token (implicit)",
+                                "required": true,
                                 "type": "string",
                                 "enum": [
                                     "code",
@@ -419,8 +385,6 @@
                         "produces": [
                             "application/json"
                         ],
-                        "summary": "Endpoint for obtaining access token using Authorization code, Application and Password grants",
-                        "description": "This endpoint allows requesting an access token following one of the flows below:\n        - Access Code (exchange access code for an access token)\n        - Client Credentials (2-legged, resource owner credentials are not obtained)\n        - Resource Owner Password Credentials (2-legged, client provides resource owner name and password)\n        - Refresh Token (exchange refresh token for a new access token)",
                         "parameters": [
                             {
                                 "name": "grant_type",
@@ -441,6 +405,143 @@
                             }
                         }
                     }
+                },
+                "/oauth2/introspect": {
+                    "post": {
+                        "consumes": [
+                            "application/x-www-form-urlencoded"
+                        ],
+                        "produces": [
+                            "application/json"
+                        ],
+                        "summary": "Introspect a given access_token supported",
+                        "description": "This endpoint introspects a given access_token\n",
+                        "security": [],
+                        "parameters": [
+                            {
+                                "name": "token",
+                                "in": "formData",
+                                "description": "String value of the access_token to be introspected",
+                                "required": true,
+                                "type": "string"
+                            },
+                            {
+                                "name": "token_type_hint",
+                                "in": "formData",
+                                "description": "This must contain 'access_token' to indicate the token type",
+                                "required": true,
+                                "type": "string"
+                            }
+                        ],
+                        "responses": {
+                            "200": {
+                                "description": "json document containing access_token information, etc.",
+                                "schema": {
+                                    "$ref": "#/definitions/introspect_response"
+                                }
+                            },
+                            "401": {
+                                "description": "failure"
+                            }
+                        }
+                    }
+                },
+                "/oauth2/revoke": {
+                    "post": {
+                        "responses": {
+                            "200": {
+                                "description": "response from revocation",
+                                "schema": {
+                                    "$ref": "#/definitions/token_revoke_response"
+                                }
+                            }
+                        },
+                        "description": "This endpoint revokes a given access_token or refresh_token\n",
+                        "parameters": [
+                            {
+                                "required": true,
+                                "type": "string",
+                                "description": "String value of the access_token, or refresh_token to be revoked",
+                                "in": "formData",
+                                "name": "token"
+                            },
+                            {
+                                "required": true,
+                                "type": "string",
+                                "description": "This must contain 'access_token' or 'refresh_token' to indicate the token type",
+                                "in": "formData",
+                                "name": "token_type_hint"
+                            }
+                        ],
+                        "produces": [
+                            "application/json"
+                        ],
+                        "security": [],
+                        "consumes": [
+                            "application/x-www-form-urlencoded"
+                        ],
+                        "summary": "Revoke a given access_token or refresh_token"
+                    }
+                },
+                "/oauth2/issued": {
+                    "get": {
+                        "produces": [
+                            "application/json"
+                        ],
+                        "summary": "Returns list of permission granted to the owner",
+                        "description": "This endpoint allows the return of all the issued permission(s) for a given authenticated owner per owner authentication \ndefined in the user security configuration\n",
+                        "parameters": [
+                            {
+                                "name": "username",
+                                "in": "query",
+                                "description": "username's permission to be queried if the authenticated resource has admin privileges",
+                                "required": false,
+                                "type": "string"
+                            }
+                        ],
+                        "responses": {
+                            "200": {
+                                "description": "json document containing issued information, etc.",
+                                "schema": {
+                                    "$ref": "#/definitions/issued_responses"
+                                }
+                            },
+                            "401": {
+                                "description": "failure in retreiving issued list"
+                            }
+                        }
+                    },
+                    "delete": {
+                        "consumes": [
+                            "application/x-www-form-urlencoded"
+                        ],
+                        "produces": [
+                            "application/json"
+                        ],
+                        "summary": "Revoke an application/client permission by the authorized owner",
+                        "description": "Revoke an application/client permission by the authorized owner",
+                        "parameters": [
+                            {
+                                "name": "client_id",
+                                "in": "query",
+                                "description": "client_id is the OAuth client id or application id to be revoked",
+                                "required": true,
+                                "type": "string"
+                            },
+                            {
+                                "name": "username",
+                                "in": "query",
+                                "description": "username's permission to be revoked if the authenticated resource has admin privileges",
+                                "required": false,
+                                "type": "string"
+                            }
+                        ],
+                        "responses": {
+                            "200": {
+                                "description": "OK"
+                            }
+                        }
+                    }
                 }
             },
             "definitions": {
@@ -455,9 +556,161 @@
                             "type": "string"
                         }
                     }
+                },
+                "introspect_response": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                        "active",
+                        "client_id",
+                        "client_name",
+                        "username",
+                        "sub",
+                        "exp",
+                        "expstr",
+                        "iat",
+                        "nbf",
+                        "nbfstr",
+                        "scope"
+                    ],
+                    "properties": {
+                        "active": {
+                            "type": "boolean"
+                        },
+                        "client_id": {
+                            "type": "string"
+                        },
+                        "client_name": {
+                            "type": "string"
+                        },
+                        "username": {
+                            "type": "string"
+                        },
+                        "sub": {
+                            "type": "string"
+                        },
+                        "exp": {
+                            "type": "string"
+                        },
+                        "expstr": {
+                            "type": "string"
+                        },
+                        "iat": {
+                            "type": "string"
+                        },
+                        "nbf": {
+                            "type": "string"
+                        },
+                        "nbfstr": {
+                            "type": "string"
+                        },
+                        "scope": {
+                            "type": "string"
+                        },
+                        "miscinfo": {
+                            "type": "string"
+                        },
+                        "consented_on": {
+                            "type": "string"
+                        },
+                        "consented_on_str": {
+                            "type": "string"
+                        },
+                        "grant_type": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "token_revoke_response": {
+                    "additionalProperties": false,
+                    "type": "object",
+                    "properties": {
+                        "status": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "issued_response": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                        "clientId",
+                        "owner",
+                        "scope",
+                        "issuedAt",
+                        "expiredAt",
+                        "refreshTokenIssued"
+                    ],
+                    "properties": {
+                        "clientId": {
+                            "type": "string"
+                        },
+                        "clientName": {
+                            "type": "string"
+                        },
+                        "owner": {
+                            "type": "string"
+                        },
+                        "scope": {
+                            "type": "string"
+                        },
+                        "issuedAt": {
+                            "type": "string"
+                        },
+                        "expiredAt": {
+                            "type": "string"
+                        },
+                        "refreshTokenIssued": {
+                            "type": "boolean"
+                        },
+                        "miscInfo": {
+                            "type": "string"
+                        },
+                        "consentedOn": {
+                            "type": "string"
+                        },
+                        "appId": {
+                            "type": "string"
+                        },
+                        "org": {
+                            "type": "string"
+                        },
+                        "orgId": {
+                            "type": "string"
+                        },
+                        "provider": {
+                            "type": "string"
+                        },
+                        "providerId": {
+                            "type": "string"
+                        },
+                        "catalog": {
+                            "type": "string"
+                        },
+                        "catalogId": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "issued_responses": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/issued_response"
+                    }
                 }
             },
-            "securityDefinitions": {}
+            "securityDefinitions": {
+                "clientIdHeader": {
+                    "in": "header",
+                    "type": "apiKey",
+                    "name": "client_id"
+                },
+                "clientSecretHeader": {
+                    "in": "header",
+                    "type": "apiKey",
+                    "name": "client_secret"
+                }
+            }
         },
         "pkce": {
             "enabled": true,

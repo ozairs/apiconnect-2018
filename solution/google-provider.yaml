@@ -1,0 +1,50 @@
+{
+    "type": "oauth_provider",
+    "api_version": "2.0.0",
+    "id": "b6f5ab9b-53d2-43ca-b8e0-704ee4ac3b44",
+    "name": "google-provider",
+    "title": "google-provider",
+    "debug": true,
+    "owned": true,
+    "provider_type": "third_party",
+    "scopes": {
+        "teams": "team scope"
+    },
+    "grants": [
+        "access_code"
+    ],
+    "gateway_version": "6000",
+    "third_party_config": {
+        "token_validation_requirement": "active",
+        "introspection_endpoint": {
+            "endpoint": "https://127.0.0.1:9443/om/sandbox/utility/introspect/google",
+            "tls_client_profile_url": "https://manager.apic2018.tor01.containers.appdomain.cloud/api/orgs/e39981d3-3c32-4a10-beac-dc8720e51116/tls-client-profiles/c928dd0e-6b5e-4462-ab16-f5f9e2dc205e"
+        },
+        "authorize_endpoint": "https://accounts.google.com/o/oauth2/v2/auth",
+        "token_endpoint": "https://accounts.google.com/o/oauth2/v2/auth",
+        "security": [
+            "basic-auth"
+        ],
+        "basic_auth": {
+            "request_headername": "x-introspect-basic-authorization-header",
+            "username": "spoon",
+            "password": "********"
+        },
+        "advanced_scope_security": {
+            "enabled": false,
+            "mode": [
+                "basic-auth"
+            ],
+            "basic_auth": {
+                "request_headername": "x-advanced-scope-basic-authorization-header"
+            }
+        }
+    },
+    "tls_client_profile_urls": [
+        "https://manager.apic2018.tor01.containers.appdomain.cloud/api/orgs/e39981d3-3c32-4a10-beac-dc8720e51116/tls-client-profiles/c928dd0e-6b5e-4462-ab16-f5f9e2dc205e"
+    ],
+    "created_at": "2019-07-20T03:49:10.949Z",
+    "updated_at": "2019-07-23T22:00:50.260Z",
+    "org_url": "https://manager.apic2018.tor01.containers.appdomain.cloud/api/orgs/e39981d3-3c32-4a10-beac-dc8720e51116",
+    "url": "https://manager.apic2018.tor01.containers.appdomain.cloud/api/orgs/e39981d3-3c32-4a10-beac-dc8720e51116/oauth-providers/b6f5ab9b-53d2-43ca-b8e0-704ee4ac3b44"
+}

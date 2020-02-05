@@ -1,0 +1,156 @@
+swagger: '2.0'
+info:
+  title: weather
+  x-ibm-name: weather
+  version: 1.0.0
+x-ibm-configuration:
+  cors:
+    enabled: true
+  gateway: datapower-api-gateway
+  type: rest
+  phase: realized
+  enforced: true
+  testable: true
+  assembly:
+    execute:
+      - switch:
+          version: 2.0.0
+          title: switch
+          case:
+            - condition: (($httpVerb() = 'GET' and $operationPath() = '/current'))
+              execute:
+                - set-variable:
+                    version: 2.0.0
+                    title: set-variable
+                    actions:
+                      - set: target-url
+                        value: >-
+                          https://myweatherprovider.mybluemix.net/current?zipcode=$(request.parameters.zipcode)
+                        type: string
+                    description: ''
+            - condition: (($httpVerb() = 'GET' and $operationPath() = '/today'))
+              execute:
+                - set-variable:
+                    version: 2.0.0
+                    title: set-variable
+                    actions:
+                      - set: target-url
+                        value: >-
+                          https://myweatherprovider.mybluemix.net/today?zipcode=$(request.parameters.zipcode)
+                        type: string
+      - invoke:
+          version: 2.0.0
+          title: invoke
+          header-control:
+            type: blacklist
+            values: []
+          parameter-control:
+            type: whitelist
+            values: []
+          timeout: 60
+          verb: keep
+          cache-response: protocol
+          cache-ttl: 900
+          stop-on-error:
+            - ConnectionError
+          target-url: $(target-url)
+      - gatewayscript:
+          version: 2.0.0
+          title: gatewayscript
+          source: "context.message.body.readAsJSON(function (error, json) {\n    \n    console.info(\"json %s\", JSON.stringify(json));\n    \n    if (json && context.message.statusCode == '404') {\n        console.error(\"throwing apim error %s\", JSON.stringify(json.status.code));\n    \t\tcontext.reject('ConnectionError', 'Failed to retrieve data');\n            context.set('message.status.code', 500);\n    }\n    \n    //add new attributes to the payload body\n    json.platform = 'Powered by IBM API Connect';\n    \n    json.plan = context.get('plan.name');\n    \n    //set the runtime API context\n    context.set('message.body', json);\n    \n    //add a new response header\n    context.set('message.headers.Platform', 'Powered by IBM API Connect');\n});"
+      - jwt-generate:
+          version: 2.0.0
+          title: jwt-generate
+          jwt: generated.jwt
+          iss-claim: iss.claim
+          exp-claim: 3600
+          jws-jwk: sign-jwk
+          aud-claim: oauth.verified_access_token.client_id
+          sub-claim: oauth.verified_access_token.resource_owner
+    catch:
+      - errors:
+          - ConnectionError
+          - RuntimeError
+        execute:
+          - set-variable:
+              version: 2.0.0
+              title: set-variable
+              actions:
+                - set: message.body
+                  value: '{"message": "Error occurred during search operation."}'
+                  type: string
+              description: ''
+  properties:
+    target-url:
+      value: ''
+      description: The URL of the target service
+      encoded: false
+    sign-jwk:
+      value: >-
+        {     "kty": "oct",     "use": "sig",     "kid": "ozairs",     "k":
+        "IRX6xLvAcGlPHnPqFWR_RXPJkSgYbCBTC7tE_k61WbYy6mpYtMAG0BGBtfLOcoT2U8n1X2EFl0ykV_bWg-V6YRJM1I3Mw_KtdwnNSXONC-d9JochuMQCGvv6QyjP77qdDeNtHLrrs9lBP4jXO5C22AGPgvtH3dD2mpmE7jlRocd1A8-eguKWdH5p0b8t80vFhbxCK9sY5fDTwOeJ5wH38F_lFrsLFfXqMkYD_HhMPUJOz1sP0HxqQCj1HM24EY-cHwsLg_3hnweE8wVsSTZZOMxqqGFFdjbXGiXm1OllSIJz9ptd90dws176jP7BkaxB5nG0QdsHH9btUTGjZmD_gg",    
+        "alg": "HS256" }
+    iss-claim:
+      value: ozairs@example.com
+  application-authentication:
+    certificate: false
+  catalogs: {}
+  activity-log:
+    enabled: true
+    error-content: header
+    success-content: activity
+basePath: /weather
+paths:
+  /today:
+    get:
+      responses:
+        '200':
+          schema:
+            type: string
+          description: success
+    parameters:
+      - name: zipcode
+        in: query
+        required: false
+        type: string
+  /current:
+    get:
+      responses:
+        '200':
+          schema:
+            type: string
+          description: success
+    parameters:
+      - name: zipcode
+        in: query
+        required: false
+        type: string
+securityDefinitions:
+  oauth2-server-redirect:
+    type: oauth2
+    flow: accessCode
+    x-ibm-oauth-provider: oauth2-server-redirect
+    authorizationUrl: 'https://$(catalog.url)/redirect/oauth2/authorize'
+    tokenUrl: 'https://$(catalog.url)/redirect/oauth2/token'
+    scopes:
+      openid: OpenID Scope
+      weather: Weather Scope
+  oauth2-server:
+    type: oauth2
+    flow: accessCode
+    x-ibm-oauth-provider: oauth2-server
+    authorizationUrl: 'https://$(catalog.url)//oauth2/authorize'
+    tokenUrl: 'https://$(catalog.url)//oauth2/token'
+    scopes:
+      openid: OpenID Scope
+      weather: Weather Scope
+  clientID:
+    type: apiKey
+    in: header
+    name: X-IBM-Client-Id
+security:
+  - clientID: []
+    oauth2-server:
+      - weather
+schemes:
+  - https

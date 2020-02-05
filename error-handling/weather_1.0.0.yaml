@@ -1,0 +1,124 @@
+swagger: '2.0'
+info:
+  title: weather
+  x-ibm-name: weather
+  version: 1.0.0
+x-ibm-configuration:
+  cors:
+    enabled: true
+  gateway: datapower-api-gateway
+  type: rest
+  phase: realized
+  enforced: true
+  testable: true
+  assembly:
+    execute:
+      - switch:
+          version: 2.0.0
+          title: switch
+          case:
+            - condition: (($httpVerb() = 'GET' and $operationPath() = '/current'))
+              execute:
+                - set-variable:
+                    version: 2.0.0
+                    title: set-variable
+                    actions:
+                      - set: target-url
+                        value: >-
+                          http://172.19.131.120:5000/current?zipcode=$(request.parameters.zipcode)
+                        type: string
+                    description: ''
+            - condition: (($httpVerb() = 'GET' and $operationPath() = '/today'))
+              execute:
+                - set-variable:
+                    version: 2.0.0
+                    title: set-variable
+                    actions:
+                      - set: target-url
+                        value: >-
+                          http://172.19.131.120:5000/today?zipcode=$(request.parameters.zipcode)
+                        type: string
+      - invoke:
+          version: 2.0.0
+          title: invoke
+          header-control:
+            type: blacklist
+            values: []
+          parameter-control:
+            type: whitelist
+            values: []
+          timeout: 60
+          verb: keep
+          cache-response: protocol
+          cache-ttl: 900
+          stop-on-error: []
+          target-url: $(target-url)
+      - gatewayscript:
+          version: 2.0.0
+          title: gatewayscript
+          source: >-
+            //get the runtime API context
+
+            var json = JSON.parse(context.get('message.body'));
+
+
+            console.info("json %s", JSON.stringify(json));
+
+
+            //add a new attribute to the payload body
+
+            json.platform = 'Powered by IBM API Connect';
+
+
+            //set the runtime API context
+
+            context.set('message.body', json);
+
+
+            //add a new response header
+
+            context.set('message.headers.Platform', 'Powered by IBM API
+            Connect');
+  properties:
+    target-url:
+      value: ''
+      description: The URL of the target service
+      encoded: false
+  application-authentication:
+    certificate: false
+  catalogs: {}
+basePath: /weather
+paths:
+  /today:
+    get:
+      responses:
+        '200':
+          schema:
+            type: string
+          description: success
+    parameters:
+      - name: zipcode
+        in: query
+        required: false
+        type: string
+  /current:
+    get:
+      responses:
+        '200':
+          schema:
+            type: string
+          description: success
+    parameters:
+      - name: zipcode
+        in: query
+        required: false
+        type: string
+securityDefinitions:
+  clientID:
+    type: apiKey
+    in: header
+    name: X-IBM-Client-Id
+security:
+  - clientID: []
+schemes:
+  - https

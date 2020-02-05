@@ -1,0 +1,64 @@
+swagger: '2.0'
+info:
+  title: weather
+  x-ibm-name: weather
+  version: 1.0.0
+x-ibm-configuration:
+  cors:
+    enabled: true
+  gateway: datapower-api-gateway
+  type: rest
+  phase: realized
+  enforced: true
+  testable: true
+  assembly:
+    execute:
+      - invoke:
+          title: invoke
+          version: 2.0.0
+          verb: keep
+          target-url: $(target-url)
+  properties:
+    target-url:
+      value: >-
+        http://Ozairs-MacBook-Pro.local:5000/current?zipcode=$(request.parameters.zipcode)
+      description: The URL of the target service
+      encoded: false
+  application-authentication:
+    certificate: false
+  catalogs: {}
+basePath: /weather
+paths:
+  /today:
+    get:
+      responses:
+        '200':
+          schema:
+            type: string
+          description: success
+    parameters:
+      - name: zipcode
+        in: query
+        required: false
+        type: string
+  /current:
+    get:
+      responses:
+        '200':
+          schema:
+            type: string
+          description: success
+    parameters:
+      - name: zipcode
+        in: query
+        required: false
+        type: string
+securityDefinitions:
+  clientID:
+    type: apiKey
+    in: header
+    name: X-IBM-Client-Id
+security:
+  - clientID: []
+schemes:
+  - https

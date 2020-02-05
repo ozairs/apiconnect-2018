@@ -1,0 +1,75 @@
+
+#  ***** common parameters  ***** 
+DP_APIGW_ENDPOINT=https://localhost:9444
+pORG_NAME=localtest
+CATALOG_NAME=sandbox
+CONSUMER_ORG=sandbox-test-org
+
+APIM_SERVER=https://localhost:2000
+APIM_CLIENT_ID=caa87d9a-8cd7-4686-8b6e-ee2cdc5ee267
+APIM_CLIENT_SECRET=3ecff363-7eb3-44be-9e07-6d4386c48b0b
+
+ADMIN_USERNAME=admin
+ADMIN_PWD=7iron-hide
+
+#  ***** create-porg.sh parameters ***** 
+
+pORG_NAME=localtest
+pORG_USERNAME=shavon
+pORG_PASSWORD=7iron-hide
+CATALOG_NAME=sandbox
+
+# ***** deploy-oauth.sh parameters ***** 
+
+USER_REGISTRY=local-registry
+USER_REGISTRY_URL=https://eth0_ipv4_1:9443/localtest/sandbox/utility/basic-auth/spoon/spoon
+#USER_REGISTRY=local-registry-redirect
+#USER_REGISTRY_URL=https://eth0_ipv4_1:9443/localtest/sandbox/utility/redirect/authenticate
+
+
+#API definitions must be a JSON file. Use a YAML to JSON converter to convert from YAML to JSON.
+OAUTH_PROVIDER_URL=file:///Users/ozairs/git/apiconnect-2018/openapi/oauth-provider.json
+#OAUTH_PROVIDER_URL=file:///Users/ozairs/git/apiconnect-2018/openapi/oauth-provider-redirect.json
+
+#OAuth Third Party Config
+OAUTH_THIRD_PARTY_URL=file:///Users/ozairs/git/apiconnect-2018/openapi/oauth-third-party.json
+OAUTH_PROVIDER_NAME=google-provider
+INTROSPECTION_ENDPOINT=https://eth0_ipv4_1:9443/localtest/sandbox/utility/introspect/google
+AUTHORIZE_ENDPOINT=https://accounts.google.com/o/oauth2/v2/auth
+TOKEN_ENDPOINT=https://accounts.google.com/o/oauth2/v2/auth
+SCOPE=weather
+SCOPE_DESCRIPTION=weather_scope
+BASIC_AUTH_USERNAME=spoon
+BASIC_AUTH_PASSWORD=spoon
+
+GOOGLE_OPENID_URL=https://accounts.google.com/o/oauth2/v2/auth?client_id=<client_id>'&'redirect_uri=https://www.getpostman.com/oauth2/callback'&'scope=openid'&'response_type=token
+
+AUTHO_URL=https://ozairs.auth0.com/oauth/token
+AUTHO_CLIENT_ID=<client_id>
+AUTHO_CLIENT_SECRET=<client_secret>
+AUTHO_AUDIENCE=ozairs.apiconnect.com
+
+#Consumer Application
+CONSUMER_ORG=sandbox-test-org
+CONSUMER_APP_NAME=sandbox-test-app
+CONSUMER_APP_CREDS=weather
+CONSUMER_REDIRECT_URL=https://www.getpostman.com/oauth2/callback
+# need to manually escape \ with \\ 
+CONSUMER_APP_CERT=MIID7jCCAtagAwIBAgIgZvs/SK92ayK3j9xRQt2GKDB5NEWItYJUn1vuGKZxDMUw\\nDQYJKoZIhvcNAQEFBQAwgYoxEDAOBgNVBAYTB1Rvcm9udG8xDDAKBgNVBAoMA0lC\\nTTEOMAwGA1UECwwFQ2xvdWQxGjAYBgNVBAMMEW96YWlycy5jYS5pYm0uY29tMSAw\\nHgYJKoZIhvcNAQkBFhFvemFpcnNAY2EuaWJtLmNvbTEaMBgGA1UEAwwRb3phaXJz\\nLmNhLmlibS5jb20wHhcNMTkwNTIzMjA0NDA1WhcNMjkwNTIzMjA0NDA1WjBuMRAw\\nDgYDVQQGEwdUb3JvbnRvMQwwCgYDVQQKDANJQk0xDjAMBgNVBAsMBUNsb3VkMRow\\nGAYDVQQDDBFvemFpcnMuY2EuaWJtLmNvbTEgMB4GCSqGSIb3DQEJARYRb3phaXJz\\nQGNhLmlibS5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDhrfoj\\niBqsPgUHtuWa8GSEZfnh6SF/2pIQtCu+kdHTA1ofWdrWcn0wqrUwoV0DnPgGLra6\\nn3ux0mLTp7SrUR4K8EmiXdOzP5XOrosN1LoOcEbX+fOnZuM6i/CcogAnAlFN89Vp\\nU9KPzFml6N/QKEhiKxE4AvJLa8RIm8qVQeAnsYtLamUJaGYklKd31fzePVqHrqu9\\njTLZS7mvbNXrktmHkfnQi3r62BQiUgsL6CmHn2O4DPW/AgWgU3r8x4MOhDIfasrh\\novo3+R8hZHb0/88pZiFG3XFPsQeqHjSTOKu6bFKiyjoTg0ugkq1f4wzxihuivyY7\\nhb/SqdQE9UpWQGyzAgMBAAGjWzBZMB0GA1UdDgQWBBT+nkC3+cIHgtpI78wFyHr8\\njtwdvjAfBgNVHSMEGDAWgBT+nkC3+cIHgtpI78wFyHr8jtwdvjAXBgNVHREEEDAO\\nggxPemFpciBTaGVpa2gwDQYJKoZIhvcNAQEFBQADggEBAIGZ+1PctcogIZ1I1Thu\\nk06+Tnami6pFHPkFDtldfD6FKw6VDqiRQEo/D1iH3trT0Wb32D0zBLmlznQu0goH\\ng5hkRWg3LaTy62w9qaktrJ0BKHTheSBTkiB0iom7OOXZa2ZCCxJhYMddCpi9n+5s\\nubQ/IUkQxcUJKItMc3dhqaXjNiAa/1kIlfZ5iiBv+pb7o6HSW78Aun2uxpwMLKPO\\nb8cY/1yIzgX1/jMvQ31HBhuLiDB0mCXAZZIZfDPb6ajPAlvapmfE1zmEyNTsOyaX\\n7O9NwgW9gD+ySMWzMtjQhIH8zMMdllKrfIkQCpXvsZ+awdjWA79wKjlirjj/WHJZ\\njMY=
+
+JWK_FILE=file:///Users/ozairs/git/apiconnect-2018/crypto/jwk-rs256.json
+
+#  ***** test-api.sh ***** 
+
+CONSUMER_USERNAME=spoon
+CONSUMER_PASSWORD=spoon
+CONSUMER_BASIC_AUTH=c3Bvb246c3Bvb24=
+CONSUMER_SCOPE=weather%20openid
+#CONSUMER_CLIENT_ID=8d9e1fc3705d7dcfaee835bd5cd0b2fe
+#CONSUMER_CLIENT_SECRET=72b0aaa5bae6b88cd3b4cbeba93f40ba
+CONSUMER_CLIENT_ID=8d9e1fc3705d7dcfaee835bd5cd0b2fe
+CONSUMER_CLIENT_SECRET=72b0aaa5bae6b88cd3b4cbeba93f40ba
+CONSUMER_JWT_TOKEN=eyJraWQiOiJvemFpcnMiLCJhbGciOiJSUzI1NiJ9.eyJqdGkiOiIwNjgxYTZkZi00MjQ2LTQxMGUtYTFjZS1lMGZlZTdiMTkyNzAiLCJpc3MiOiJTcG9vbiBCYW5rIEluYyIsInN1YiI6Imh0dHBzOi8vb3phaXJzLmFwaWNvbm5lY3QuY29tLyIsImF1ZCI6ImNsaWVudC1pZCIsImV4cCI6MTU2Mzc3MTQ5MCwiaWF0IjoxNTYzNzY3ODkwLCJkaXNjbGFpbWVyIjoiZm9yIGRlbW8gcHVycG9zZSJ9.rvi_xmc63--Eimki5gRu2krDXw_3AhnX-anuYclPh79H1BlOHjUBYhn5MtjBQ8U5jUlRanRcVE4RDw4L7QT7zY6-nOw4QHYrEQfX0DnOSORai9g4Owcv66j8DfLsCTo2ZCnQvKud0GbQHfEzs_Msg0xO3YgyxoTAR20kjTts0BnPuQByNrI5sYeVSLI4QhbQEEZxUFmS8Clwh2RFHigsvvXFw2j5e0UVbxTVoocm1b6aSZ6mOrEocTrtWJwkfIITaqTvEwoym6rfGsjsC6ov_b_tyWXWWrMA67Of0G47hzGe9ut7o9lT4DkGfxVn0lQB9ORsRT_2S-Z3ODuQ8k8Akw
+
+
+API_PRODUCT_NAME=weather-auto-product

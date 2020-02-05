@@ -1,0 +1,208 @@
+{
+    "name": "oauth2-server-redirect",
+    "title": "oauth2-server-redirect",
+    "provider_type": "native",
+    "grants": [
+        "access_code",
+        "implicit",
+        "application",
+        "password",
+        "jwt"
+    ],
+    "gateway_version": "6000",
+    "native_provider": {
+        "clients": [
+            "confidential"
+        ],
+        "authorize_path": "/oauth2/authorize",
+        "token_path": "/oauth2/token",
+        "api": {
+            "info": {
+                "description": ""
+            },
+            "x-ibm-configuration": {
+                "gateway": "datapower-api-gateway",
+                "assembly": {
+                    "execute": [
+                        {
+                            "oauth": {
+                                "title": "oauth-auto-generated-1",
+                                "version": "2.0.0",
+                                "description": "This oauth policy performs all OAuth/OpenID Connect protocol steps that are needed for OAuth Validation by default. The inputs and outputs of each of the steps are driven by documented context variables. Add or remove the Supported OAuth Components as required.",
+                                "oauth-provider-settings-ref": {
+                                    "default": "oauth2-server-redirect"
+                                },
+                                "supported-oauth-components": [
+                                    "OAuthValidateRequest"
+                                ]
+                            }
+                        },
+                        {
+                            "switch": {
+                                "version": "2.0.0",
+                                "title": "oauth-auto-generated-switch",
+                                "case": [
+                                    {
+                                        "condition": "($operationPath() = '/oauth2/token')",
+                                        "execute": [
+                                            {
+                                                "user-security": {
+                                                    "title": "user-security-auto-generated-password",
+                                                    "version": "2.1.0",
+                                                    "description": "",
+                                                    "factor-id": "default",
+                                                    "extract-identity-method": "context-var",
+                                                    "ei-stop-on-error": false,
+                                                    "user-auth-method": "user-registry",
+                                                    "au-stop-on-error": false,
+                                                    "user-az-method": "authenticated",
+                                                    "az-stop-on-error": true,
+                                                    "auth-response-headers-pattern": "(?i)x-api*",
+                                                    "auth-response-header-credential": "X-API-Authenticated-Credential",
+                                                    "pass-context-var": "request.parameters.password.values",
+                                                    "user-context-var": "request.parameters.username.values",
+                                                    "user-registry": "local-registry-redirect"
+                                                }
+                                            },
+                                            {
+                                                "oauth": {
+                                                    "title": "oauth-auto-generated-3",
+                                                    "version": "2.0.0",
+                                                    "description": "This oauth policy performs all OAuth/OpenID Connect protocol steps that are needed for token path by default. The inputs and outputs of each of the steps are driven by documented context variables. Add or remove the Supported OAuth Components as required.",
+                                                    "oauth-provider-settings-ref": {
+                                                        "default": "oauth2-server-redirect"
+                                                    },
+                                                    "supported-oauth-components": [
+                                                        "OAuthGenerateAccessToken",
+                                                        "OAuthVerifyAZCode",
+                                                        "OAuthVerifyRefreshToken",
+                                                        "OAuthCollectMetadata"
+                                                    ]
+                                                }
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "condition": "($operationPath() = '/oauth2/authorize')",
+                                        "execute": [
+                                            {
+                                                "user-security": {
+                                                    "title": "user-security-auto-generated",
+                                                    "version": "2.1.0",
+                                                    "description": "This user security policy performs EI(basic) and AU(auth url) check for oauth assembly. Change the security check method as required",
+                                                    "factor-id": "default",
+                                                    "extract-identity-method": "redirect",
+                                                    "ei-stop-on-error": true,
+                                                    "user-auth-method": "user-registry",
+                                                    "au-stop-on-error": true,
+                                                    "user-az-method": "authenticated",
+                                                    "az-stop-on-error": true,
+                                                    "auth-response-headers-pattern": "(?i)x-api*",
+                                                    "auth-response-header-credential": "X-API-Authenticated-Credential",
+                                                    "redirect-url": "https://localhost:9444/localtest/sandbox/utility/redirect",
+                                                    "redirect-time-limit": 300,
+                                                    "user-registry": "local-registry-redirect"
+                                                }
+                                            },
+                                            {
+                                                "oauth": {
+                                                    "title": "oauth-auto-generated-2",
+                                                    "version": "2.0.0",
+                                                    "description": "This oauth policy performs all OAuth/OpenID Connect protocol steps that are needed for az code path by default. The inputs and outputs of each of the steps are driven by documented context variables. Add or remove the Supported OAuth Components as required.",
+                                                    "oauth-provider-settings-ref": {
+                                                        "default": "oauth2-server-redirect"
+                                                    },
+                                                    "supported-oauth-components": [
+                                                        "OAuthGenerateAZCode",
+                                                        "OAuthGenerateAccessToken",
+                                                        "OAuthVerifyAZCode",
+                                                        "OAuthCollectMetadata"
+                                                    ]
+                                                }
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "otherwise": [
+                                            {
+                                                "oauth": {
+                                                    "title": "oauth-auto-generated-4",
+                                                    "version": "2.0.0",
+                                                    "description": "This oauth policy performs all OAuth/OpenID Connect protocol steps that are needed for all other paths by default. The inputs and outputs of each of the steps are driven by documented context variables. Add or remove the Supported OAuth Components as required.",
+                                                    "oauth-provider-settings-ref": {
+                                                        "default": "oauth2-server-redirect"
+                                                    },
+                                                    "supported-oauth-components": [
+                                                        "OAuthIntrospectToken",
+                                                        "OAuthRevokeToken"
+                                                    ]
+                                                }
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "type": "oauth",
+                "testable": true,
+                "enforced": true,
+                "phase": "realized",
+                "cors": {
+                    "enabled": true
+                }
+            },
+            "basePath": "/redirect"
+        },
+        "pkce": {
+            "enabled": true,
+            "required": false,
+            "allow_plain": false
+        },
+        "refresh_token": {
+            "enabled": true,
+            "count": 2048,
+            "ttl": 2682000,
+            "one_time_use": true
+        },
+        "openid_connect": {
+            "enabled": true,
+            "supported_response_types": [
+                "code_id_token"
+            ]
+        },
+        "revocation": {
+            "enabled": false,
+            "type": "native",
+            "application_revocation": {
+                "enabled": false,
+                "apprevoke_path": "/oauth2/revoke"
+            },
+            "owner_revocation": {
+                "enabled": false,
+                "owner_revoke_path": "/oauth2/issued"
+            },
+            "resource_owner_revocation_path": "/oauth2/issued",
+            "client_revocation_path": "/oauth2/revoke"
+        },
+        "token_introspection": {
+            "enabled": true,
+            "introspection_path": "/oauth2/introspect"
+        },
+        "native_provider_5000": {},
+        "advanced_scope_security": {
+            "enabled": false,
+            "mode": [
+                "basic-auth"
+            ],
+            "basic_auth": {
+                "request_headername": "x-advanced-scope-basic-authorization-header"
+            }
+        }
+    },
+    "scopes": {
+        "weather": "Weather Scope",
+        "openid": "OpenID Scope"
+    }
+}
