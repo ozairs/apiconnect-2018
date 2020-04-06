@@ -25,7 +25,7 @@ x-ibm-configuration:
                     actions:
                       - set: target-url
                         value: >-
-                          https://myweatherprovider.mybluemix.net/current?zipcode=$(request.parameters.zipcode)
+                          http://172.19.131.120:5000/current?zipcode=$(request.parameters.zipcode)
                         type: string
                     description: ''
             - condition: (($httpVerb() = 'GET' and $operationPath() = '/today'))
@@ -36,7 +36,7 @@ x-ibm-configuration:
                     actions:
                       - set: target-url
                         value: >-
-                          https://myweatherprovider.mybluemix.net/today?zipcode=$(request.parameters.zipcode)
+                          http://172.19.131.120:5000/today?zipcode=$(request.parameters.zipcode)
                         type: string
       - invoke:
           version: 2.0.0
@@ -57,7 +57,7 @@ x-ibm-configuration:
       - gatewayscript:
           version: 2.0.0
           title: gatewayscript
-          source: "context.message.body.readAsJSON(function (error, json) {\n    \n    console.info(\"json %s\", JSON.stringify(json));\n    \n    if (json && context.message.statusCode == '404') {\n        console.error(\"throwing apim error %s\", JSON.stringify(json.status.code));\n    \t\tcontext.reject('ConnectionError', 'Failed to retrieve data');\n            context.set('message.status.code', 500);\n    }\n    \n    //add new attributes to the payload body\n    json.platform = 'Powered by IBM API Connect';\n    \n    //set the runtime API context\n    context.set('message.body', json);\n    \n    //add a new response header\n    context.set('message.headers.Platform', 'Powered by IBM API Connect');\n});"
+          source: "//get the runtime API context\nvar json = JSON.parse(context.get('message.body'));\n\nconsole.info(\"json %s\", JSON.stringify(json));\n\nif (json && context.message.statusCode == '404') {\n    console.error(\"throwing apim error %s\", JSON.stringify(json.status.code));\n\t\tcontext.reject('ConnectionError', 'Failed to retrieve data');\n        context.set('message.status.code', 500);\n}\n\n//add a new attribute to the payload body\njson.platform = 'Powered by IBM API Connect';\n\n//set the runtime API context\ncontext.set('message.body', json);\n\n//add a new response header\ncontext.set('message.headers.Platform', 'Powered by IBM API Connect');"
     catch:
       - errors:
           - ConnectionError
@@ -76,20 +76,9 @@ x-ibm-configuration:
       value: ''
       description: The URL of the target service
       encoded: false
-    sign-jwk:
-      value: >-
-        {     "kty": "oct",     "use": "sig",     "kid": "ozairs",     "k":
-        "IRX6xLvAcGlPHnPqFWR_RXPJkSgYbCBTC7tE_k61WbYy6mpYtMAG0BGBtfLOcoT2U8n1X2EFl0ykV_bWg-V6YRJM1I3Mw_KtdwnNSXONC-d9JochuMQCGvv6QyjP77qdDeNtHLrrs9lBP4jXO5C22AGPgvtH3dD2mpmE7jlRocd1A8-eguKWdH5p0b8t80vFhbxCK9sY5fDTwOeJ5wH38F_lFrsLFfXqMkYD_HhMPUJOz1sP0HxqQCj1HM24EY-cHwsLg_3hnweE8wVsSTZZOMxqqGFFdjbXGiXm1OllSIJz9ptd90dws176jP7BkaxB5nG0QdsHH9btUTGjZmD_gg",    
-        "alg": "HS256" }
-    iss-claim:
-      value: ozairs@example.com
   application-authentication:
     certificate: false
   catalogs: {}
-  activity-log:
-    enabled: true
-    error-content: header
-    success-content: activity
 basePath: /weather
 paths:
   /today:
@@ -117,24 +106,11 @@ paths:
         required: false
         type: string
 securityDefinitions:
-  oauth2-server-redirect:
-    type: oauth2
-    flow: accessCode
-    x-ibm-oauth-provider: oauth2-server-redirect
-    authorizationUrl: 'https://$(catalog.url)/redirect/oauth2/authorize'
-    tokenUrl: 'https://$(catalog.url)/redirect/oauth2/token'
-    scopes:
-      openid: Support OIDC
-      weather: weather scope
-    name: oauth2-server-redirect
   clientID:
     type: apiKey
     in: header
     name: X-IBM-Client-Id
 security:
   - clientID: []
-    oauth2-server-redirect:
-      - openid
-      - weather
 schemes:
   - https

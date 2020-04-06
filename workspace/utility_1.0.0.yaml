@@ -30,11 +30,36 @@ x-ibm-configuration:
         "alg": "HS256" }
       encoded: false
     iss-claim:
-      value: Spoon Bank Inc
+      value: ozairs4@example.com
       encoded: false
     aud-claim:
       value: client-id-12345
       encoded: false
+    sub-claim:
+      value: ozairs@example.com
+    sign-jwk-rs256:
+      value: >-
+        {     "p":
+        "8qKYF9FqYrrAIsCm5kiy2UiGFfhjghYquB-xdHLYz6wXHdCPgIPH9EtynNIchidPRClw5g_NPXu2X6z3ol35c--YEy6wQBRnsYQAvPIQRGVxvXRsVaZhg-geE_msIQ22h5JXQbMS9NDFcZBZYLu5hgAvn1Qu8CV6exeeGohNAWU",    
+        "kty": "RSA",     "q":
+        "6QH20yqJZeNg1mHNz0tifOyEIYvQrnZh5RHhgo7rXOa6nYfUBRYzQ-a3TtDVqYMudo4DITb0t4EX6CynpXYwtXJTwlumoqPD1Osu4_lsBwlhMH7fhiZg63wxQ4dNPrIblrVi5rXPCJkRtIda2Y-9r4pIQm2JyaXcWXxM2feBINc",    
+        "d":
+        "2RRC9mZZQRBaVyiuV37Ls14_lOxbRuejBp3WtxWFxNl3EpDV-dHRVeVPZ7E0UgjjhrtgokWbUKPoNie3sUL0X3_Ddf-8fQ2pEN8xRPlovG2grTO2dP4vNPxBJGSFxhA-p4rkhuhQbqRJDSH-EuC1Yb6uvEGzu8bvezvCkr_uYMmst2y2qEwTZzgUbM4iK2JUuuy-SbJ3tKw9DAFRmSSLeI9ihd_ieACozjv4mucPaSr6FvJaGGxEpUQnZV8FICRLLAufpNXUrC5q3bGDXklUapQzglTAF0dBLz4JT6SaWlXVXrwQ9HfoQaxuW3epawNxmSjWQvpTJCmuPr27Q2-tYQ",    
+        "e": "AQAB",     "use": "sig",     "kid": "ibm-apiconnect",     "qi":
+        "fZcdGnJacUC0QFGcngRD_TQKLVgeB9nDMsOAvCvJCZVBNdD3m7ra4Kb1AOrdhvsCHh0VQMZfc-nLyhhz2JF1-p2w8qbTKoQ3S3DLE2VyoyBfEysNBd_KvnWYoQG8xo8OEHiJqCekQQkph6Fkkmev6KuZdxRJUOFjJ5YSbj-jkcY",    
+        "dp":
+        "ZbRwCnPWo0Hire6RRzAr_9ZdljIDDBFcoMdwK_7EEPDy06WLsXQLycQia8fK-xTZLhos39K51k7YGGy5dI7ttII2_btxV7r16DwLzyesV-8p6R83FgPjFlai3P6n_0bvPw7BkqGMjaBBUyQNwvWNg7TqQWAZOMKM_7HbrQV7Od0",    
+        "alg": "RS256",     "dq":
+        "BmvFb4BGlQY1DvNXBpVfO24RHhOKRqSAgh2CB2UE22SIU_sAPruj4gUjnAppOOiiiSXUtD-dcskd7Yn9fLPLF9T0tfBsoSK-LMnmWuXusiryALIeWsYH-bVMbj32RPoHhJmvBgiQkf4V3NG2ETTC12mKIDqAh4wIjHa-b2tApbU",    
+        "n":
+        "3NfZAKgsyq0mOiiOTIKs27fIH5Wgetp6W6hvm3XzCd5AzoxUShrYLh-3kT3FS1GNEpwHjpfbl4fM2xsX9WyKz5UQyvgDrM9-qrh-a0ZUTVeGqeD0UcktNDsoAxMRSfRqNtCBBDtJzKz5wjWtM-0mFHU_nD2MTRrME9GjtCfe8JrDuWMmQ2HoY-7B3mqovaL70Dw-0n48wOS_HbKu4c8AY01xvMOAWv_I5-b2lYtuBpGEO921AuiKQQyUF4OBPZs9pp4aXtrLQ-_pm6HDijTq-j9Yqw0s9pw5RuZaXyfcZidp0Zid4YS_qjyQOkj_utWRf_R8X5FslTvJFj8VP73L0w"
+        }
+    verify-jwk-256:
+      value: >-
+        {     "kty": "RSA",     "e": "AQAB",     "use": "sig",     "kid":
+        "ibm-apiconnect",     "alg": "RS256",     "n":
+        "3NfZAKgsyq0mOiiOTIKs27fIH5Wgetp6W6hvm3XzCd5AzoxUShrYLh-3kT3FS1GNEpwHjpfbl4fM2xsX9WyKz5UQyvgDrM9-qrh-a0ZUTVeGqeD0UcktNDsoAxMRSfRqNtCBBDtJzKz5wjWtM-0mFHU_nD2MTRrME9GjtCfe8JrDuWMmQ2HoY-7B3mqovaL70Dw-0n48wOS_HbKu4c8AY01xvMOAWv_I5-b2lYtuBpGEO921AuiKQQyUF4OBPZs9pp4aXtrLQ-_pm6HDijTq-j9Yqw0s9pw5RuZaXyfcZidp0Zid4YS_qjyQOkj_utWRf_R8X5FslTvJFj8VP73L0w"
+        }
   cors:
     enabled: true
   activity-log:
@@ -130,7 +155,8 @@ x-ibm-configuration:
                 - gatewayscript:
                     version: 2.0.0
                     title: gatewayscript
-                    source: 'console.error(''sign-jwk %s'', context.get(''sign-jwk''))'
+                    source: >-
+                      console.error(context.get('request.headers.authorization'));
                 - jwt-validate:
                     version: 2.0.0
                     title: jwt-validate
@@ -138,7 +164,16 @@ x-ibm-configuration:
                     output-claims: decoded.claims
                     iss-claim: .*
                     aud-claim: .*
-                    jws-jwk: sign-jwk
+                    jws-jwk: verify-jwk-256
+                  gatewayscript:
+                    version: 2.0.0
+                    title: gatewayscript
+                    source: >-
+                      console.error(context.get('request.headers.authorization'));
+
+
+
+                      console.error(context.get('verify-jwk-256'));
                 - set-variable:
                     version: 2.0.0
                     title: set-variable
@@ -154,10 +189,11 @@ x-ibm-configuration:
                     jwt: generated.jwt
                     iss-claim: iss-claim
                     exp-claim: 3600
-                    jws-jwk: sign-jwk
-                    jws-alg: HS256
+                    jws-jwk: sign-jwk-rs256
+                    jws-alg: RS256
                     aud-claim: aud-claim
                     jti-claim: false
+                    sub-claim: sub-claim
                 - set-variable:
                     version: 2.0.0
                     title: set-variable
@@ -241,31 +277,6 @@ x-ibm-configuration:
                       var rsa256Key = JSON.parse(context.get('rsa256Key.body'));
                       console.error('rsa keys %s', rsa256Key.keys[0]);
                       context.set('jwk-key', rsa256Key.keys[0]);
-                - gatewayscript:
-                    version: 2.0.0
-                    title: gatewayscript
-                    source: >-
-                      context.message.body.readAsBuffer(function (error,
-                      response) {
-                              if (error) {
-                                  console.error ('>> pre introspection - error performing introspection');
-                                  return;
-                              }
-
-                              console.info("pre introspection: response %s", response);
-
-                              var queryList = {};
-                              var queryParams = response.toString().split('&');
-                              for (var i = 0; i < queryParams.length; i++) {
-                                  var tmpArray = queryParams[i].split('=');
-                                  queryList[tmpArray[0]] = tmpArray[1];
-
-                              }
-                              //setting third-party token into Authorization header
-                              console.error('token %s', queryList['token']);
-                              context.message.header.set('Authorization', 'Bearer ' + queryList['token']);
-                              context.set('token', queryList['token'])
-                          });
                 - jwt-validate:
                     version: 2.0.0
                     title: jwt-validate-jwk
@@ -395,6 +406,217 @@ x-ibm-configuration:
                       california');
 
                       context.set('message.status.code', 200);
+            - condition: ($httpVerb() = 'GET' and $operationPath() = '/azure/redirect')
+              execute:
+                - set-variable:
+                    version: 2.0.0
+                    title: set-variable
+                    actions:
+                      - set: destinationURL
+                        value: >-
+                          https://login.microsoftonline.com/82c24479-70c0-44c7-90ac-8d4e3979c07f/oauth2/v2.0/authorize?client_id=3217bf35-fc1a-44b1-a0ab-7133b6615e67&response_type=code&scope=openid&redirect_uri=https://apigateway.ozairs.fyre.ibm.com/om/sandbox/utility/azure/redirect
+                        type: string
+                      - set: destinationTokenURL
+                        value: >-
+                          https://login.microsoftonline.com/82c24479-70c0-44c7-90ac-8d4e3979c07f/oauth2/v2.0/token
+                        type: string
+                      - set: destinationTokenBody
+                        value: >-
+                          grant_type=authorization_code&client_id=3217bf35-fc1a-44b1-a0ab-7133b6615e67&client_secret=60.ohP-X]r4G-6gnBgmYNtEEFM7H@p9P&redirect_uri=https://apigateway.ozairs.fyre.ibm.com/om/sandbox/utility/azure/redirect
+                        type: string
+                - switch:
+                    version: 2.0.0
+                    title: switch
+                    case:
+                      - condition: ($queryParameter('code'))
+                        execute:
+                          - gatewayscript:
+                              version: 2.0.0
+                              title: extract-query-param
+                              source: >-
+                                var response =
+                                context.get('request.querystring');
+
+                                console.error("response %s", response);
+
+
+                                //save query parameters into an array
+
+                                var queryList = {};
+
+                                var queryParams =
+                                response.toString().split('&');
+
+                                for (var i = 0; i < queryParams.length; i++) {
+                                    var tmpArray = queryParams[i].split('=');
+                                    queryList[tmpArray[0]] = tmpArray[1];
+
+                                }
+
+
+                                var azCode = queryList['code'];
+
+                                console.error('code %s', azCode);
+
+
+                                var state = queryList['state'];
+
+                                console.error('state %s', state);
+
+
+                                //save code and state query parameters into
+                                context variables
+
+                                if (azCode != '') {    
+                                    context.set('tokenURL', context.get('destinationTokenURL'));
+                                    context.set('tokenBody', context.get('destinationTokenBody') + '&code=' + azCode + '&session_state=' + queryList['session_state']);
+
+                                    console.error('token URL %s', context.get('tokenURL'));
+                                    console.error('token body %s', context.get('tokenBody'));
+
+                                    context.set('originalURL', queryList['state']);
+                                }
+                          - gatewayscript:
+                              version: 2.0.0
+                              title: invoke-azure-ad-token
+                              source: |
+                                var url = require('urlopen');
+
+                                var options = { 
+                                    target: context.get('tokenURL'),
+                                    method: 'post',
+                                    sslClientProfile: 'tls-client-profile-default',
+                                    contentType: 'application/x-www-form-urlencoded',
+                                    timeout: 60,
+                                    data: context.get("tokenBody") 
+                                };
+
+                                url.open (options, function (err, json) {
+                                    if (err) {
+                                        console.error("Error %s", err);
+                                        throw err;
+                                    }
+
+                                    json.readAsJSON(function (error, resp) {
+                                        if (error) {
+                                            console.error("Error %s", error);
+                                            throw error;
+                                        }
+                                        context.message.body.write(JSON.stringify(resp));
+                                        console.error("Azure AD Token response %s", resp);
+                                    });
+                                    
+                                });
+                          - gatewayscript:
+                              version: 2.0.0
+                              title: redirect-with-code
+                              source: >-
+                                /**
+                                 * Read Azure AD response redirect to original URL with username and confirmation code 
+                                 */
+                                context.message.body.readAsJSON(function(error,
+                                json) {
+                                   
+                                    if (error) {
+                                        console.error('Error reason response: ' + error);
+                                    } 
+                                    else {
+                                        var name = 'azure';
+                                        //need JSON.parse to access field
+                                        var token = JSON.parse(json).id_token;
+                                        console.error('ID Token %s ', token);
+
+                                        var origUrl = decodeURIComponent(context.get('originalURL') || '');
+                                        var location = origUrl + '&username=' + name + '&confirmation=' + token;
+                                        
+                                        //set the response headers to trigger a redirect back to API Connect
+                                        context.set('message.status.code', 302);
+                                        context.set('message.headers.location', location);
+                                        console.error('redirect back to API Connect Authorization endpoint ', location);
+                                    } 
+                                });
+                      - otherwise:
+                          - gatewayscript:
+                              version: 2.0.0
+                              title: redirect-azure-ad
+                              source: >-
+                                console.error('original-url : ',
+                                context.get('request.parameters.original-url'));
+
+                                //build the callback URL using the original URL
+                                passed into the service
+
+                                var origUrl =
+                                context.get('request.parameters.original-url').values[0];
+
+
+                                var location =  context.get('destinationURL') +
+                                '&state=' + origUrl;
+
+
+                                context.set('message.status.code', 302);
+
+                                context.set('message.headers.location',
+                                location);
+
+                                console.error('redirect back to ', location);
+            - condition: >-
+                ($httpVerb() = 'GET' and $operationPath() =
+                '/azure/redirect/authenticate')
+              execute:
+                - gatewayscript:
+                    version: 2.0.0
+                    title: gatewayscript
+                    source: >-
+                      var reqauth = context.get('request.authorization').split('
+                      ');
+
+                      var splitval = new Buffer((reqauth[1] || ''),
+                      'base64').toString('utf8').split(':');
+
+                      var username = splitval[0] || '';
+
+                      var code = splitval[1] || '';
+
+                      context.set('code', code);
+
+                      console.error('code %s', code);
+                - invoke:
+                    version: 2.0.0
+                    title: get-jwk-azure
+                    header-control:
+                      type: blacklist
+                      values: []
+                    parameter-control:
+                      type: whitelist
+                      values: []
+                    timeout: 60
+                    verb: GET
+                    cache-response: protocol
+                    cache-ttl: 900
+                    stop-on-error: []
+                    target-url: >-
+                      https://login.microsoftonline.com/82c24479-70c0-44c7-90ac-8d4e3979c07f/discovery/v2.0/keys
+                    output: rsa256Key
+                - gatewayscript:
+                    version: 2.0.0
+                    title: save-jwk
+                    source: |-
+                      var rsa256Key = JSON.parse(context.get('rsa256Key.body'));
+                      console.error('rsa keys %s', rsa256Key.keys[0]);
+                      context.set('jwk-key', rsa256Key.keys[0]);
+                - jwt-validate:
+                    version: 2.0.0
+                    title: jwt-validate-jwk
+                    jwt: code
+                    output-claims: decoded.claims
+                    iss-claim: .*
+                    aud-claim: .*
+                    jws-jwk: jwk-key
+                - gatewayscript:
+                    version: 2.0.0
+                    title: gatewayscript
+                    source: "if (context.get('decoded.claims')) {\n\tvar response = { \n\t    \"active\": true, \n\t    \"jwt-claims\" : context.get('decoded.claims')\n\t};\n\t\n\tcontext.set('message.body', response);\n\tcontext.set('message.status.code', 200);\n\tconsole.error ('>> oauth introspection is successful %s', JSON.stringify(context.get('decoded.claims')));\n}\nelse {\n    context.set('message.status.code', 200);\n\t\n\tconsole.error ('>> oauth introspection failed %s', JSON.stringify(JSON.stringify(context.get('decoded.claims'))));\n}"
     catch: []
   gateway: datapower-api-gateway
   type: rest
@@ -418,6 +640,20 @@ parameters:
 tags: []
 definitions: {}
 paths:
+  /azure/redirect/authenticate:
+    get:
+      responses:
+        '200':
+          schema:
+            type: string
+          description: success
+  /azure/redirect:
+    get:
+      responses:
+        '200':
+          schema:
+            type: string
+          description: success
   /scope-check:
     get:
       responses:

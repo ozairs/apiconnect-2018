@@ -508,6 +508,7 @@
     },
     "scopes": {
         "weather": "Weather Scope",
+        "sports": "Sports Scope",
         "openid": "OpenID Scope"
     }
 }

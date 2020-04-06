@@ -10,7 +10,7 @@ In this tutorial, you will learn how to implement dynamically flow logic without
 
 **Instructions:** 
 
-* **Note**: If you did not complete previous tutorial, import the API definitions file from **<workspace>/conditional/weather_1.0.0.yaml**. See instructions [here]()
+* **Note**: You must complete If you did not complete previous tutorial, import the API definitions file from **<workspace>/conditional/weather_1.0.0.yaml**.
 
 We will examine the existing conditional policy in the Assembly.
 

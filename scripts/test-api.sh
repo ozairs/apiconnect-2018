@@ -24,7 +24,7 @@ done
 CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 # no parameters passed, using default config file
 if [ "$FILENAME" == '' ]; then
-  source config.cfg
+  source ${CURRENT_DIR}/config.cfg 
   echo 'Using default config file at ' ${CURRENT_DIR}/config.cfg 
   COMMAND=$1
   SUBCOMMAND=$2
@@ -42,6 +42,8 @@ else
   SUBCOMMAND=$4
   EXTRA_CURL_COMMANDS=$5
 fi
+
+RESPONSE_STATUS=""
 
 case $COMMAND in
 
@@ -91,7 +93,7 @@ case $COMMAND in
           echo "Access Code: ${DP_APIGW_ENDPOINT}/${pORG_NAME}/${CATALOG_NAME}/oauth2/authorize"
           CURL_BODY='?client_id='${CONSUMER_CLIENT_ID}'&response_type=code&scope='${CONSUMER_SCOPE}'&redirect_uri='${CONSUMER_REDIRECT_URL}
 
-          RESPONSE=`curl -s -k -H "Content-Type: application/x-www-form-urlencoded" -u "${CONSUMER_USERNAME}:${CONSUMER_PASSWORD}" $EXTRA_CURL_COMMANDS ${DP_APIGW_ENDPOINT}/${pORG_NAME}/${CATALOG_NAME}/oauth2/authorize$CURL_BODY --include 2>&1 | grep 'Location'`
+          RESPONSE=`curl -s -k -H "Content-Type: application/x-www-form-urlencoded" -u "${CONSUMER_USERNAME}:${CONSUMER_PASSWORD}" $EXTRA_CURL_COMMANDS ${DP_APIGW_ENDPOINT}/${pORG_NAME}/${CATALOG_NAME}/oauth2/authorize$CURL_BODY --include 2>&1 | grep -i 'location'`
 
           RESPONSE_STATUS=`echo "$RESPONSE"`
 
@@ -230,9 +232,15 @@ case $COMMAND in
 
   utility)
     nice_echo "Utility API: ${DP_APIGW_ENDPOINT}/${pORG_NAME}/${CATALOG_NAME}/utility/$SUBCOMMAND"
-    RESPONSE=`curl -s -k -u "${CONSUMER_USERNAME}:${CONSUMER_PASSWORD}" -H "Content-Type: application/json" -H "Accept: application/json" -H "$EXTRA_CURL_COMMANDS" ${DP_APIGW_ENDPOINT}/${pORG_NAME}/${CATALOG_NAME}/utility/$SUBCOMMAND`
     
+    RESPONSE=`curl -s -k -H "Content-Type: application/json" -H "Accept: application/json" "'$EXTRA_CURL_COMMANDS'" ${DP_APIGW_ENDPOINT}/${pORG_NAME}/${CATALOG_NAME}/utility/$SUBCOMMAND`
+
     RESPONSE_STATUS=`echo "$RESPONSE" | jq -r '.'`
+    ;;
+
+  utility-validate)
+      echo "validate command needs to manually enter following curl command:"
+      echo "curl -s -k -H "Content-Type: application/json" -H "Accept: application/json" "$EXTRA_CURL_COMMANDS" ${DP_APIGW_ENDPOINT}/${pORG_NAME}/${CATALOG_NAME}/utility/$SUBCOMMAND"
     ;;
 
   utility-introspect)
@@ -247,7 +255,7 @@ case $COMMAND in
     ;;
 
   weather-oauth)
-    nice_echo "Weather API"
+    nice_echo "Weather API ${DP_APIGW_ENDPOINT}/${pORG_NAME}/${CATALOG_NAME}/weather/$SUBCOMMAND?zipcode=10510"
 
     read -p "Enter the access token: " TOKEN_RESPONSE
     RESPONSE=`curl -s -k -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization: Bearer $TOKEN_RESPONSE" -H "x-ibm-client-id: ${CONSUMER_CLIENT_ID}" -H "x-ibm-client-secret: ${CONSUMER_CLIENT_SECRET}" $EXTRA_CURL_COMMANDS ${DP_APIGW_ENDPOINT}/${pORG_NAME}/${CATALOG_NAME}/weather/$SUBCOMMAND?zipcode=10510`
@@ -262,15 +270,40 @@ case $COMMAND in
     fi
     ;;
 
-  sports)
-    nice_echo "Team API"
+  fancave)
+    nice_echo "Fancave API ${DP_APIGW_ENDPOINT}/${pORG_NAME}/${CATALOG_NAME}/sports/$SUBCOMMAND?$EXTRA_CURL_COMMANDS"
 
-    #RESPONSE=`curl -s -k -H "Content-Type: application/json" -H "Accept: application/json" -H "x-ibm-client-id: ${CONSUMER_CLIENT_ID}" $EXTRA_CURL_COMMANDS ${DP_APIGW_ENDPOINT}/${pORG_NAME}/${CATALOG_NAME}/sports/$SUBCOMMAND?league=nba`
-    RESPONSE=`curl -s -k -H "Content-Type: application/json" -H "Accept: application/json" -H "x-ibm-client-id: ${CONSUMER_CLIENT_ID}" $EXTRA_CURL_COMMANDS "https://127.0.0.1.xip.io/api/team/list?league=nba"`
+    RESPONSE=`curl -s -k -H "Content-Type: application/json" $EXTRA_CURL_COMMANDS http://127.0.0.1:3000/api/$SUBCOMMAND?$EXTRA_CURL_COMMANDS`
+
+     RESPONSE_STATUS=`echo "$RESPONSE" | jq -r '.'`
+    #http://[::1]:3000/api/list/news?league=nba
+    #http://[::1]:3000/api/list/players?league=nba&team=tor
+    #http://[::1]:3000/api/team/scores?league=nba&season=2019-2020-regular&date=20200226
     ;;
 
+  sports)
+    nice_echo "Team API ${DP_APIGW_ENDPOINT}/${pORG_NAME}/${CATALOG_NAME}/sports/$SUBCOMMAND?league=nba"
+
+    RESPONSE=`curl -s -k -H "Content-Type: application/json" -H "Accept: application/json" -H "x-ibm-client-id: ${CONSUMER_CLIENT_ID}" $EXTRA_CURL_COMMANDS ${DP_APIGW_ENDPOINT}/${pORG_NAME}/${CATALOG_NAME}/sports/$SUBCOMMAND?league=nba`
+    ;;
+
+  sports-oauth)
+    nice_echo "Sports API ${DP_APIGW_ENDPOINT}/${pORG_NAME}/${CATALOG_NAME}/sports/$SUBCOMMAND?league=nba"
+
+    read -p "Enter the access token: " TOKEN_RESPONSE
+    RESPONSE=`curl -s -k -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization: Bearer $TOKEN_RESPONSE" -H "x-ibm-client-id: ${CONSUMER_CLIENT_ID}" -H "x-ibm-client-secret: ${CONSUMER_CLIENT_SECRET}" $EXTRA_CURL_COMMANDS ${DP_APIGW_ENDPOINT}/${pORG_NAME}/${CATALOG_NAME}/sports/$SUBCOMMAND?league=nba`
+
+    RESPONSE_STATUS=`echo "$RESPONSE" | jq -r '.httpCode'`
+
+    if [[ $RESPONSE_STATUS == 401 ]];   #failed call
+    then
+      RESPONSE_STATUS=null
+    else 
+      RESPONSE_STATUS='OK'
+    fi
+    ;;
   pokemon)
-    nice_echo "Pokemon API"
+    nice_echo "Pokemon API ${DP_APIGW_ENDPOINT}/${pORG_NAME}/${CATALOG_NAME}/api/$SUBCOMMAND"
     RESPONSE=`curl -s -k -H "Content-Type: application/json" -H "Accept: application/json" $EXTRA_CURL_COMMANDS ${DP_APIGW_ENDPOINT}/${pORG_NAME}/${CATALOG_NAME}/api/$SUBCOMMAND`
     ;;
 
@@ -313,6 +346,10 @@ if [[ $RESPONSE_STATUS == null ]];   #item exists
 then
  echo "${RED}FAIL${END_COLOR}"
  echo 'Failed call with error' $RESPONSE
+elif [ "$RESPONSE_STATUS" = "" ]
+then
+  echo "${RED}FAIL${END_COLOR}"
+  echo 'Empty Reply'
 else
   echo "${GREEN}SUCCESS${END_COLOR}"
   echo $RESPONSE

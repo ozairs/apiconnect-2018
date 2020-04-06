@@ -8,7 +8,18 @@ schemes:
 basePath: /sports
 security:
   - clientID: []
+    oauth2-server:
+      - sports
 securityDefinitions:
+  oauth2-server:
+    type: oauth2
+    flow: application
+    x-ibm-oauth-provider: oauth2-server
+    tokenUrl: 'https://$(catalog.url)//oauth2/token'
+    scopes:
+      openid: OpenID Scope
+      sports: Sports Scope
+      weather: Weather Scope
   clientID:
     type: apiKey
     in: header
@@ -18,10 +29,33 @@ x-ibm-configuration:
   testable: true
   enforced: true
   properties:
-    target-url:
-      value: 'https://fancave.mybluemix.net'
-      description: URL of the proxy policy
+    target-server:
+      value: 'http://fancave-teams.istio-demo.svc.cluster.local:3080'
+      description: 'Default target server: https://fancave.bluemix.net'
       encoded: false
+    sign-jwk-rs256:
+      value: >-
+        {     "p":
+        "8qKYF9FqYrrAIsCm5kiy2UiGFfhjghYquB-xdHLYz6wXHdCPgIPH9EtynNIchidPRClw5g_NPXu2X6z3ol35c--YEy6wQBRnsYQAvPIQRGVxvXRsVaZhg-geE_msIQ22h5JXQbMS9NDFcZBZYLu5hgAvn1Qu8CV6exeeGohNAWU",    
+        "kty": "RSA",     "q":
+        "6QH20yqJZeNg1mHNz0tifOyEIYvQrnZh5RHhgo7rXOa6nYfUBRYzQ-a3TtDVqYMudo4DITb0t4EX6CynpXYwtXJTwlumoqPD1Osu4_lsBwlhMH7fhiZg63wxQ4dNPrIblrVi5rXPCJkRtIda2Y-9r4pIQm2JyaXcWXxM2feBINc",    
+        "d":
+        "2RRC9mZZQRBaVyiuV37Ls14_lOxbRuejBp3WtxWFxNl3EpDV-dHRVeVPZ7E0UgjjhrtgokWbUKPoNie3sUL0X3_Ddf-8fQ2pEN8xRPlovG2grTO2dP4vNPxBJGSFxhA-p4rkhuhQbqRJDSH-EuC1Yb6uvEGzu8bvezvCkr_uYMmst2y2qEwTZzgUbM4iK2JUuuy-SbJ3tKw9DAFRmSSLeI9ihd_ieACozjv4mucPaSr6FvJaGGxEpUQnZV8FICRLLAufpNXUrC5q3bGDXklUapQzglTAF0dBLz4JT6SaWlXVXrwQ9HfoQaxuW3epawNxmSjWQvpTJCmuPr27Q2-tYQ",    
+        "e": "AQAB",     "use": "sig",     "kid": "ibm-apiconnect",     "qi":
+        "fZcdGnJacUC0QFGcngRD_TQKLVgeB9nDMsOAvCvJCZVBNdD3m7ra4Kb1AOrdhvsCHh0VQMZfc-nLyhhz2JF1-p2w8qbTKoQ3S3DLE2VyoyBfEysNBd_KvnWYoQG8xo8OEHiJqCekQQkph6Fkkmev6KuZdxRJUOFjJ5YSbj-jkcY",    
+        "dp":
+        "ZbRwCnPWo0Hire6RRzAr_9ZdljIDDBFcoMdwK_7EEPDy06WLsXQLycQia8fK-xTZLhos39K51k7YGGy5dI7ttII2_btxV7r16DwLzyesV-8p6R83FgPjFlai3P6n_0bvPw7BkqGMjaBBUyQNwvWNg7TqQWAZOMKM_7HbrQV7Od0",    
+        "alg": "RS256",     "dq":
+        "BmvFb4BGlQY1DvNXBpVfO24RHhOKRqSAgh2CB2UE22SIU_sAPruj4gUjnAppOOiiiSXUtD-dcskd7Yn9fLPLF9T0tfBsoSK-LMnmWuXusiryALIeWsYH-bVMbj32RPoHhJmvBgiQkf4V3NG2ETTC12mKIDqAh4wIjHa-b2tApbU",    
+        "n":
+        "3NfZAKgsyq0mOiiOTIKs27fIH5Wgetp6W6hvm3XzCd5AzoxUShrYLh-3kT3FS1GNEpwHjpfbl4fM2xsX9WyKz5UQyvgDrM9-qrh-a0ZUTVeGqeD0UcktNDsoAxMRSfRqNtCBBDtJzKz5wjWtM-0mFHU_nD2MTRrME9GjtCfe8JrDuWMmQ2HoY-7B3mqovaL70Dw-0n48wOS_HbKu4c8AY01xvMOAWv_I5-b2lYtuBpGEO921AuiKQQyUF4OBPZs9pp4aXtrLQ-_pm6HDijTq-j9Yqw0s9pw5RuZaXyfcZidp0Zid4YS_qjyQOkj_utWRf_R8X5FslTvJFj8VP73L0w"
+        }
+    iss-claim:
+      value: ozairs4@example.com
+    aud-claim:
+      value: client-id-12345
+    sub-claim:
+      value: ozairs@example.com
   catalogs: {}
   cors:
     enabled: true
@@ -33,6 +67,20 @@ x-ibm-configuration:
     certificate: false
   assembly:
     execute:
+      - jwt-generate:
+          version: 2.0.0
+          title: jwt-generate
+          jwt: generated.jwt
+          iss-claim: iss-claim
+          exp-claim: 3600
+          sub-claim: sub-claim
+          aud-claim: aud-claim
+          jws-jwk: sign-jwk-rs256
+          jws-alg: RS256
+      - gatewayscript:
+          version: 2.0.0
+          title: gatewayscript
+          source: "context.message.body.readAsJSON(function (error, json) {\n    \n    console.info(\"json %s\", JSON.stringify(json));\n    \n    if (json && context.message.statusCode == '404') {\n        console.error(\"throwing apim error %s\", JSON.stringify(json.status.code));\n    \t\tcontext.reject('ConnectionError', 'Failed to retrieve data');\n            context.set('message.status.code', 500);\n    }\n    else if (json) {\n        json.plan = context.get('plan.name');\n    }\n    \n    console.error(\"jwt token %s\", context.get('generated.jwt'));\n    \n    context.message.header.set('Authorization', context.get('generated.jwt'));\n    \n    //set the runtime API context\n    context.set('message.body', json);\n});"
       - switch:
           version: 2.0.0
           title: switch
@@ -44,7 +92,7 @@ x-ibm-configuration:
                     version: 2.0.0
                     verb: keep
                     target-url: >-
-                      https://fancave.mybluemix.net/api/team/scores?league={league}&date={date}
+                      $(target-server)/api/team/scores?league={league}&date={date}
                     header-control:
                       type: blacklist
                       values: []
@@ -57,8 +105,7 @@ x-ibm-configuration:
                     title: invoke
                     version: 2.0.0
                     verb: keep
-                    target-url: >-
-                      https://fancave.mybluemix.net/api/player/list?league={league}
+                    target-url: '$(target-server)/api/player/list?league={league}'
                     header-control:
                       type: blacklist
                       values: []
@@ -71,8 +118,7 @@ x-ibm-configuration:
                     title: invoke
                     version: 2.0.0
                     verb: keep
-                    target-url: >-
-                      https://fancave.mybluemix.net/api/news/feed?league={league}
+                    target-url: '$(target-server)/api/news/feed?league={league}'
                     header-control:
                       type: blacklist
                       values: []
@@ -85,20 +131,23 @@ x-ibm-configuration:
                     title: invoke
                     version: 2.0.0
                     verb: keep
-                    target-url: >-
-                      https://fancave.mybluemix.net/api/team/list?league={league}
+                    target-url: '$(target-server)/api/team/list?league={league}'
                     header-control:
                       type: blacklist
                       values: []
                     parameter-control:
                       type: blacklist
                       values: []
-      - parse:
-          version: 2.0.0
-          title: parse
-          parse-settings-reference:
-            default: apic-default-parsesettings
-    catch: []
+    catch:
+      - errors: []
+        execute:
+          - set-variable:
+              version: 2.0.0
+              title: set-variable
+              actions:
+                - set: message.body
+                  value: '{"message": "Error occurred during search operation."}'
+                  type: string
   gateway: datapower-api-gateway
   type: rest
 paths:

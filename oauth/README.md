@@ -41,25 +41,7 @@ In the next step, you will protect the Weather API with an OAuth 2 server.
 
 3. The LTE does not include the UI for creating and managing OAuth providers; however, you can still create OAuth providers using either the CLI or REST API. In this tutorial, you will use the REST API (via script) to configure a default native OAuth provider. 
 
-4. The OAuth provider uses a Authentication URL scheme to authentication and authorize users. This service is deployed in the Utility API. The OAuth definition needs the IP address of the API Gateway container to invoke the Utility API. Enter the following commands to obtain the IP address for the API Gateway container.
-
-	```
-	docker ps -aqf "name=datapower-api-gateway"
-	6158880ed70d
-	```
-
-	Note the container id returned. It will be different than the example above.
-
-	```
-	docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}'  <container id>
-	172.22.0.6
-	```
-
-	Note the IP address of the container. It will be different than the example above.
-
-5. Open the `<workspace>/scripts/config.cfg` file and scroll down to the `USER_REGISTRY_URL` variable. Change the IP address to reflect your environment, For example, `USER_REGISTRY_URL=https://172.22.0.6:9443/localtest/sandbox/utility/basic-auth/spoon/spoon`
-
-6. Run the script to create an OAuth provider. Enter 1 for the Authentication URL when prompted. It will create an OAuth server with the name `oauth2-server` that uses an Authentication URL for authentication/authorization.
+4. Run the script to create an OAuth provider. Enter 1 for the Authentication URL when prompted. It will create an OAuth server with the name `oauth2-server` that uses an Authentication URL for authentication/authorization.
 
 	```
 	<workspace>/scripts/deploy-oauth.sh
@@ -74,14 +56,14 @@ In the next step, you will protect the Weather API with an OAuth 2 server.
 
 Validate the responses within the script to make sure there are no errors.
 
-7. Create an OAuth2 security definition. Select the **weather-1.0.0** API. Perform the following steps and enter the following values:
+5. Create an OAuth2 security definition. Select the **weather-1.0.0** API. Perform the following steps and enter the following values:
  * Select **Security Definitions** and click the **Add** button.
  * Enter the name `oauth2-server`. Select `OAuth` as the **Type**. In the OAuth Provider drop-down, select `oauth2-server` and flow `Resource Owner` (all flows are supported but specific flows can be shown in the dev portal)
  * Leave the remaining fields at their default values and click **Save**. 
 
-8. Apply the `OAuth2-server` security definition to the `weather` API. Select the **Security** section in the left nav bar. Check **oauth2-server** and the scope `weather`. Save the API definition.
+6. Apply the `OAuth2-server` security definition to the `weather` API. Select the **Security** section in the left nav bar. Check **oauth2-server** and the scope `weather`. Save the API definition.
 
-9. Test the Weather API, you will now get an error because the API is protected using OAuth. In the next step you will obtain an access token to call the same APIs
+7. Test the Weather API, you will now get an error because the API is protected using OAuth. In the next step you will obtain an access token to call the same APIs
 	```
 	./test-api.sh weather current
 
